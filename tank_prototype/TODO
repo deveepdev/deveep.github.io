@@ -1,0 +1,9 @@
+-Make bullet types upgradable, and tank aswell
+-add enemies
+-add descriptions to bullets
+-aiming system (shows prediction to where bullet will land, probably using traveled distance of bullet)
+
+
+         ---bug fixes---
+o-explosion is delayed more the closer you are the the enemy that it hits
+o-when checking for ememies inside the explosion its only splicing the enemy that it hits cause its not going over all the ones inside the explosion

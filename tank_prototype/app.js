@@ -46,15 +46,18 @@ let tankcd = 0
 class Hud {
     constructor() {
         this.margin = 15
-        this.fireModes = ["Hoaming", "Single", "Burst"]
-        this.fireModeProperties = [{cd: 500, lifetime: 1500}, {cd: 250, lifetime: 750}, {cd: 500, lifetime: 550}]
-        this.selectedMode = 0
+        this.fireModes = ["Hoaming", "Single", "Burst", "Explosive"]
+        this.fireModeProperties = [{cd: 500, lifetime: 1500}, {cd: 250, lifetime: 750}, {cd: 500, lifetime: 550}, {cd: 700, lifetime: 400}]
+        this.selectedMode = 1
     }
     drawFireCD() {
-        let width = 150
+        let width = 200
         let height = 25
         let widthPercentage = tankcd/this.fireModeProperties[this.selectedMode].cd
+        
         ctx.beginPath()
+        ctx.fillStyle = "#515151"
+        ctx.fillRect(this.margin, (canvas.height-this.margin)-height, width, height)
         ctx.fillStyle = "#fff"
         ctx.fillRect(this.margin, (canvas.height-this.margin)-height, width*widthPercentage, height)
     }
@@ -176,12 +179,44 @@ class Tank {
     }
 }
 
+class Enemy {
+    constructor(x, y) {
+        this.color = Math.random() * 255
+        this.health = 100
+        this.radius = 15
+        this.velocity = {
+            x: 0,
+            y: 0
+        }
+
+        this.position = {
+            x,
+            y
+        }
+    }
+    damage(n) {
+        this.health -= n
+    }
+    draw() {
+        ctx.beginPath()
+        ctx.strokeStyle = `hsl(${this.color}, 50%, 30%)`
+        ctx.fillStyle = `hsl(${this.color}, 50%, 50%)`
+        ctx.lineWidth = 3
+        ctx.arc(this.position.x, this.position.y, this.radius, 0, 2*Math.PI)
+        ctx.fill()
+        ctx.stroke()
+    }
+}
+
 class Bullet {
     constructor(tank) {
         // if (tank instanceof Tank) {}
         this.tank = tank
         this.radius = 5
-        this.hoaming = false
+        this.explosionRadius = 100
+        this.alpha = 0.5
+        this.detonate = false
+        this.type
         this.traveled = 0
         this.originalPosition = {
             x: this.tank.position.x,
@@ -198,16 +233,21 @@ class Bullet {
         }
     }
     draw() {
-        this.position.x += this.velocity.x
-        this.position.y += this.velocity.y
-        this.traveled += Math.abs(this.velocity.x) + Math.abs(this.velocity.y)
-        ctx.beginPath()
-        ctx.strokeStyle = `hsl(${this.tank.color}, 50%, 30%)`
-        ctx.fillStyle = `hsl(${this.tank.color}, 50%, 50%)`
-        ctx.lineWidth = 2
-        ctx.arc(this.position.x, this.position.y, this.radius, 0, 2*Math.PI)
-        ctx.fill()
-        ctx.stroke()
+        if (!this.detonate) {
+            this.position.x += this.velocity.x
+            this.position.y += this.velocity.y
+        }
+        this.traveled += Math.abs(Math.cos(this.velocity.x))
+        this.traveled += Math.abs(Math.cos(this.velocity.y))
+        if (!this.detonate) {
+            ctx.beginPath()
+            ctx.strokeStyle = `hsl(${this.tank.color}, 50%, 30%)`
+            ctx.fillStyle = `hsl(${this.tank.color}, 50%, 50%)`
+            ctx.lineWidth = 2
+            ctx.arc(this.position.x, this.position.y, this.radius, 0, 2*Math.PI)
+            ctx.fill()
+            ctx.stroke()
+        }
 
         if (this.position.x -this.radius + this.velocity.x <= 0 || this.position.x +this.radius + this.velocity.x >= canvas.width) {
             this.velocity.x = -this.velocity.x
@@ -236,32 +276,89 @@ class Bullet {
         //     }
         // }
     }
+    explode() {
+        this.alpha -= 0.006
+        ctx.beginPath()
+        ctx.save()
+        ctx.globalAlpha = Math.max(this.alpha, 0)
+        ctx.fillStyle = `hsl(${this.tank.color}, 50%, 50%)`
+        ctx.arc(this.position.x, this.position.y, this.explosionRadius, 0, 2*Math.PI)
+        ctx.fill()
+        ctx.restore()
+    }
 }
 
 const tank = new Tank(cw, ch)
+
+let enemies = []
 let bullets = []
+
+setInterval(() => {
+    enemies.push(new Enemy(Math.random() * canvas.width, Math.random() * canvas.height))
+}, 1000)
 
 function animate() {
     requestAnimationFrame(animate)
     ctx.clearRect(0, 0, cw*2, ch*2)
-    
-    bullets.forEach(bullet => {
-        // if (isPointInsideRotatedRectangle(bullet, tank)) {
-            // bullets.splice(bullet, 1)
-            // console.log("boom")
-        // }
-        if (bullet.hoaming) {
-            let angle = Math.atan2(bullet.position.y - mouse.y, bullet.position.x - mouse.x)
-            bullet.velocity.x = -Math.cos(angle)
-            bullet.velocity.y = -Math.sin(angle)
+
+    for (let i = 0; i < bullets.length; i++) {
+        bullets[i].draw()
+
+        if (bullets[i].detonate) {
+            bullets[i].explode()
         }
 
-        if (bullet.traveled >= hud.fireModeProperties[hud.selectedMode].lifetime) {
-            bullets.splice(bullet, 1)
+        if (bullets[i].alpha <= 0) {
+            bullets.splice(i, 1)
+            break
+        }
+        
+        if (bullets[i].type == "hoaming") {
+            let angle = Math.atan2(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
+            bullets[i].velocity.x = -Math.cos(angle)
+            bullets[i].velocity.y = -Math.sin(angle)
         }
 
-        bullet.draw()
-    })
+        if (bullets[i].traveled >= hud.fireModeProperties[hud.selectedMode].lifetime && !bullets[i].detonate) {
+            if (bullets[i].type == "explosive") {
+                bullets[i].detonate = true
+            } else {
+                if (bullets[i].detonate) break
+                bullets.splice(i, 1)
+                break
+            }
+        }
+
+        let distance = Math.hypot(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
+        if (bullets[i].type == "hoaming" && distance <= bullets[i].radius/2) {
+            bullets.splice(i, 1)
+            break
+        }
+
+        for (let j = 0; j < enemies.length; j++) {
+            let distance = Math.hypot(bullets[i].position.y - enemies[j].position.y, bullets[i].position.x - enemies[j].position.x)
+            if (bullets[i].type == "explosive") {
+                if (distance <= bullets[i].explosionRadius + enemies[j].radius && bullets[i].detonate) {
+                    enemies[j].damage(100)
+                } else if (distance <= bullets[i].radius + enemies[j].radius) {
+                    bullets[i].detonate = true
+                }
+            } else {
+                if (distance <= bullets[i].radius + enemies[j].radius) {
+                    enemies[j].damage(100)
+                    bullets.splice(i, 1)
+                    break
+                }
+            }
+        }
+    }
+
+    for (let i = 0; i < enemies.length; i++) {
+        enemies[i].draw()
+        if (enemies[i].health <= 0) {
+            enemies.splice(i, 1)
+        }
+    }
 
     let angle = Math.atan2(tank.position.y - mouse.y, tank.position.x - mouse.x)
     tank.muzzleRotation = angle
@@ -287,13 +384,14 @@ addEventListener("mousemove", (e) => {
     mouse.y = e.y
 })
 
-addEventListener("click", (e) => {
+function fire() {
     if (tank.cd == 0) {
+        let bullet
         switch (hud.fireModes[hud.selectedMode]) {
             case "Hoaming":
                 tank.cd = hud.fireModeProperties[hud.selectedMode].cd
-                let bullet = new Bullet(tank)
-                bullet.hoaming = true
+                bullet = new Bullet(tank)
+                bullet.type = "hoaming"
                 bullets.push(bullet)
                 break;
             case "Single":
@@ -313,10 +411,20 @@ addEventListener("click", (e) => {
                     }, 70)
                 }, 70)
                 break;
+            case "Explosive":
+                tank.cd = hud.fireModeProperties[hud.selectedMode].cd
+                bullet = new Bullet(tank)
+                bullet.type = "explosive"
+                bullets.push(bullet)
+                break;
             default:
                 break;
         }
     }
+}
+
+addEventListener("click", () => {
+    fire()
 })
 
 addEventListener("keydown", (e) => {
@@ -335,20 +443,26 @@ addEventListener("keydown", (e) => {
             break;
         case "1":
             if (hud.selectedMode != 0) {
-                fireModeChange()
                 hud.selectedMode = 0
+                fireModeChange()
             }
             break;
         case "2":
             if (hud.selectedMode != 1) {
-                fireModeChange()
                 hud.selectedMode = 1
+                fireModeChange()
             }
             break;
         case "3":
             if (hud.selectedMode != 2) {
-                fireModeChange()
                 hud.selectedMode = 2
+                fireModeChange()
+            }
+            break;
+        case "4":
+            if (hud.selectedMode != 3) {
+                hud.selectedMode = 3
+                fireModeChange()
             }
             break;
         default:
