@@ -12,43 +12,27 @@ let mouse = {
     y: 0
 }
 
-// function isPointInsideRotatedRectangle(point, rectangle) {
-//     // Extract properties of the rectangle
-//     const rotation = rectangle.rotation
-//     const width = rectangle.width
-//     const height = rectangle.height
-//     const rectX = rectangle.position.x;
-//     const rectY = rectangle.position.y;
-//     const pointX = point.position.x;
-//     const pointY = point.position.y;
-
-//     // Calculate center of the rectangle
-//     const centerX = rectX + width / 2;
-//     const centerY = rectY + height / 2;
-
-//     // Translate point and rectangle center to origin
-//     const translatedPointX = pointX - centerX;
-//     const translatedPointY = pointY - centerY;
-
-//     // Rotate point coordinates by negative rotation angle
-//     const rotatedPointX = translatedPointX * Math.cos(-rotation) - translatedPointY * Math.sin(-rotation);
-//     const rotatedPointY = translatedPointX * Math.sin(-rotation) + translatedPointY * Math.cos(-rotation);
-
-//     // Check if rotated point is within the unrotated rectangle's bounds
-//     return (
-//         Math.abs(rotatedPointX) <= width / 2 &&
-//         Math.abs(rotatedPointY) <= height / 2
-//     );
-// }
-
+let paused = false
 let tankcd = 0
 
 class Hud {
     constructor() {
         this.margin = 15
+        this.usd = 0
         this.fireModes = ["Hoaming", "Single", "Burst", "Explosive"]
         this.fireModeProperties = [{cd: 500, lifetime: 1500}, {cd: 250, lifetime: 750}, {cd: 500, lifetime: 550}, {cd: 700, lifetime: 400}]
         this.selectedMode = 1
+    }
+    drawUSD() {
+        // FREEDOM DOLLAR
+        ctx.beginPath()
+        ctx.save()
+        ctx.font = "35px sans-serif"
+        ctx.fillStyle = "#fff"
+        ctx.textAlign = "left"
+        ctx.textBaseline = "top"
+        ctx.fillText(this.usd, this.margin, this.margin)
+        ctx.restore()
     }
     drawFireCD() {
         let width = 200
@@ -82,6 +66,7 @@ class Hud {
         ctx.stroke()
     }
     draw() {
+        this.drawUSD()
         this.drawFireCD()
         this.drawFireModes()
     }
@@ -95,6 +80,11 @@ class Tank {
         this.width = 40
         this.height = 60
         this.cd = hud.fireModeProperties[hud.selectedMode].cd
+
+        this.bullet = {
+            speed: 1,
+            explosionRadius: 100
+        }
 
         this.steering = {
             forward: false,
@@ -157,6 +147,18 @@ class Tank {
 
         this.steer()
     }
+    upgrade(value, n) {
+        switch (value) {
+            case "speed":
+                this.bullet.speed += n
+                break;
+            case "explosion radius":
+                this.bullet.explosionRadius += n
+                break;
+            default:
+                break;
+        }
+    }
     steer() {
         this.position.x += this.velocity.x
         this.position.y += this.velocity.y
@@ -209,14 +211,16 @@ class Enemy {
 }
 
 class Bullet {
-    constructor(tank) {
+    constructor(tank, type) {
         // if (tank instanceof Tank) {}
+        this.speed = tank.bullet.speed
+
+        this.type = type
         this.tank = tank
         this.radius = 5
-        this.explosionRadius = 100
+        this.explosionRadius = tank.bullet.explosionRadius
         this.alpha = 0.5
         this.detonate = false
-        this.type
         this.traveled = 0
         this.originalPosition = {
             x: this.tank.position.x,
@@ -228,8 +232,8 @@ class Bullet {
         }
 
         this.velocity = {
-            x: -Math.cos(this.tank.muzzleRotation),
-            y: -Math.sin(this.tank.muzzleRotation)
+            x: -Math.cos(this.tank.muzzleRotation) * this.speed,
+            y: -Math.sin(this.tank.muzzleRotation) * this.speed
         }
     }
     draw() {
@@ -255,26 +259,6 @@ class Bullet {
         if (this.position.y -this.radius + this.velocity.y <= 0 || this.position.y +this.radius + this.velocity.y >= canvas.height) {
             this.velocity.y = -this.velocity.y
         }
-
-        // if (
-        //     this.position.x + this.radius + this.velocity.x >= this.tank.position.x - (this.tank.width/2) + this.tank.velocity.x &&
-        //     this.position.x - this.radius + this.velocity.x <= this.tank.position.x + (this.tank.width/2) + this.tank.velocity.x &&
-        //     this.position.y + this.radius + this.velocity.y >= this.tank.position.y - (this.tank.height/2) + this.tank.velocity.y &&
-        //     this.position.y - this.radius + this.velocity.y <= this.tank.position.y + (this.tank.height/2) + this.tank.velocity.y
-        // ) {
-        //     this.velocity.x = -this.velocity.x
-        // }
-
-        // if (this.position.x +this.radius + this.velocity.x >= this.tank.position.x - this.tank.width/2) {
-        //     if (this.position.x -this.radius + this.velocity.x <= this.tank.position.x + this.tank.width/2) {
-        //         this.velocity.x = -this.velocity.x
-        //     }
-        // }
-        // if (this.position.y +this.radius + this.velocity.y >= this.tank.position.y - this.tank.height/2) {
-        //     if (this.position.y -this.radius + this.velocity.y <= this.tank.position.y + this.tank.height/2) {
-        //         this.velocity.y = -this.velocity.y
-        //     }
-        // }
     }
     explode() {
         this.alpha -= 0.006
@@ -288,92 +272,166 @@ class Bullet {
     }
 }
 
+class Panel {
+    constructor(title) {
+        this.title = title
+        this.width = canvas.width/1.5
+        this.height = canvas.height/1.5
+        this.upgrades = 0
+    }
+    upgrade() {
+        this.upgrades++
+
+    }
+    draw() {
+        // box
+        ctx.beginPath()
+        ctx.save()
+        ctx.translate((canvas.width/2)-this.width/2, (canvas.height/2)-this.height/2)
+        ctx.fillStyle = "#101010"
+        ctx.strokeStyle = "#515151"
+        ctx.textAlign = "left"
+        ctx.textBaseline = "top"
+        ctx.font = "24px sans-serif"
+        ctx.rect(0, 0, this.width, this.height)
+        ctx.fill()
+        ctx.stroke()
+        ctx.restore()
+
+        // text
+        ctx.beginPath()
+        ctx.save()
+        ctx.translate((canvas.width/2)-this.width/2, (canvas.height/2)-this.height/2)
+        ctx.fillStyle = "#fff"
+        ctx.strokeStyle = "#515151"
+        ctx.textAlign = "left"
+        ctx.textBaseline = "top"
+        ctx.font = "24px sans-serif"
+        ctx.fillText(this.title, 15, 15)
+        ctx.restore()
+
+        for (let i = 0; i < this.upgrades; i++) {
+            ctx.beginPath()
+            ctx.save()
+            ctx.translate((canvas.width/2)-this.width/2, (canvas.height/2)-this.height/2)
+            ctx.lineWidth = 1
+            ctx.fillStyle = "#fff"
+            ctx.textAlign = "left"
+            ctx.textBaseline = "top"
+            ctx.font = "15px sans-serif"
+            ctx.rect(15, 75+(i*50), 75, 25)
+            ctx.fillText("upgrade", 15, 75+(i*50))
+            ctx.fillText("upgrade", 15, 75+(i*50))
+            ctx.stroke()
+            ctx.restore()
+        }
+    }
+}
+
 const tank = new Tank(cw, ch)
 
+let panels = []
 let enemies = []
 let bullets = []
 
-setInterval(() => {
-    enemies.push(new Enemy(Math.random() * canvas.width, Math.random() * canvas.height))
-}, 1000)
+let spawndelay = 0
+
+function pause() {
+    paused = true
+}
+
+function unpause() {
+    paused = false
+}
 
 function animate() {
     requestAnimationFrame(animate)
     ctx.clearRect(0, 0, cw*2, ch*2)
 
-    for (let i = 0; i < bullets.length; i++) {
-        bullets[i].draw()
+    for (let i = 0; i < panels.length; i++) {
+        panels[i].draw()
+    }
 
-        if (bullets[i].detonate) {
-            bullets[i].explode()
+    if (!paused) {
+        if (tank.cd > 0) {
+            tank.cd--
         }
 
-        if (bullets[i].alpha <= 0) {
-            bullets.splice(i, 1)
-            break
-        }
-        
-        if (bullets[i].type == "hoaming") {
-            let angle = Math.atan2(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
-            bullets[i].velocity.x = -Math.cos(angle)
-            bullets[i].velocity.y = -Math.sin(angle)
+        spawndelay++
+        if (spawndelay >= 200) {
+            spawndelay = 0
+            enemies.push(new Enemy(Math.random() * canvas.width, Math.random() * canvas.height))
         }
 
-        if (bullets[i].traveled >= hud.fireModeProperties[hud.selectedMode].lifetime && !bullets[i].detonate) {
-            if (bullets[i].type == "explosive") {
-                bullets[i].detonate = true
-            } else {
-                if (bullets[i].detonate) break
+        for (let i = 0; i < bullets.length; i++) {
+            bullets[i].draw()
+
+            if (bullets[i].detonate) {
+                bullets[i].explode()
+            }
+
+            if (bullets[i].alpha <= 0) {
                 bullets.splice(i, 1)
                 break
             }
-        }
+            
+            if (bullets[i].type == "hoaming") {
+                let angle = Math.atan2(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
+                bullets[i].velocity.x = -Math.cos(angle)
+                bullets[i].velocity.y = -Math.sin(angle)
+            }
 
-        let distance = Math.hypot(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
-        if (bullets[i].type == "hoaming" && distance <= bullets[i].radius/2) {
-            bullets.splice(i, 1)
-            break
-        }
-
-        for (let j = 0; j < enemies.length; j++) {
-            let distance = Math.hypot(bullets[i].position.y - enemies[j].position.y, bullets[i].position.x - enemies[j].position.x)
-            if (bullets[i].type == "explosive") {
-                if (distance <= bullets[i].explosionRadius + enemies[j].radius && bullets[i].detonate) {
-                    enemies[j].damage(100)
-                } else if (distance <= bullets[i].radius + enemies[j].radius) {
+            if (bullets[i].traveled >= hud.fireModeProperties[hud.selectedMode].lifetime && !bullets[i].detonate) {
+                if (bullets[i].type == "explosive") {
                     bullets[i].detonate = true
-                }
-            } else {
-                if (distance <= bullets[i].radius + enemies[j].radius) {
-                    enemies[j].damage(100)
+                } else {
+                    if (bullets[i].detonate) break
                     bullets.splice(i, 1)
                     break
                 }
             }
-        }
-    }
 
-    for (let i = 0; i < enemies.length; i++) {
-        enemies[i].draw()
-        if (enemies[i].health <= 0) {
-            enemies.splice(i, 1)
-        }
-    }
+            let distance = Math.hypot(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
+            if (bullets[i].type == "hoaming" && distance <= bullets[i].radius/2) {
+                bullets.splice(i, 1)
+                break
+            }
 
-    let angle = Math.atan2(tank.position.y - mouse.y, tank.position.x - mouse.x)
-    tank.muzzleRotation = angle
-    
-    tank.draw()
-    hud.draw()
+            for (let j = 0; j < enemies.length; j++) {
+                let distance = Math.hypot(bullets[i].position.y - enemies[j].position.y, bullets[i].position.x - enemies[j].position.x)
+                if (bullets[i].type == "explosive") {
+                    if (distance <= bullets[i].explosionRadius + enemies[j].radius && bullets[i].detonate) {
+                        enemies[j].damage(100)
+                    } else if (distance <= bullets[i].radius + enemies[j].radius) {
+                        bullets[i].detonate = true
+                    }
+                } else {
+                    if (distance <= bullets[i].radius + enemies[j].radius) {
+                        enemies[j].damage(100)
+                        bullets.splice(i, 1)
+                        break
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < enemies.length; i++) {
+            enemies[i].draw()
+            if (enemies[i].health <= 0) {
+                enemies.splice(i, 1)
+                hud.usd += 100
+            }
+        }
+
+        let angle = Math.atan2(tank.position.y - mouse.y, tank.position.x - mouse.x)
+        tank.muzzleRotation = angle
+        
+        tank.draw()
+        hud.draw()
+    }
 }
 
-animate()
-
-let cdInterval = setInterval(() => {
-    if (tank.cd > 0) {
-        tank.cd--
-    }
-}, 1)
+requestAnimationFrame(animate)
 
 function fireModeChange() {
     tank.cd = hud.fireModeProperties[hud.selectedMode].cd
@@ -385,37 +443,32 @@ addEventListener("mousemove", (e) => {
 })
 
 function fire() {
-    if (tank.cd == 0) {
-        let bullet
+    if (tank.cd == 0 && !paused) {
         switch (hud.fireModes[hud.selectedMode]) {
             case "Hoaming":
                 tank.cd = hud.fireModeProperties[hud.selectedMode].cd
-                bullet = new Bullet(tank)
-                bullet.type = "hoaming"
-                bullets.push(bullet)
+                bullets.push(new Bullet(tank, "hoaming"))
                 break;
             case "Single":
                 tank.cd = hud.fireModeProperties[hud.selectedMode].cd
-                bullets.push(new Bullet(tank))
+                bullets.push(new Bullet(tank, "single"))
                 break;
             case "Burst":
                 tank.cd = hud.fireModeProperties[hud.selectedMode].cd
-                bullets.push(new Bullet(tank))
+                bullets.push(new Bullet(tank, "burst"))
                 setTimeout(() => {
-                    bullets.push(new Bullet(tank))
+                    bullets.push(new Bullet(tank, "burst"))
                     setTimeout(() => {
-                        bullets.push(new Bullet(tank))
+                        bullets.push(new Bullet(tank, "burst"))
                         setTimeout(() => {
-                            bullets.push(new Bullet(tank))
+                            bullets.push(new Bullet(tank, "burst"))
                         }, 70)
                     }, 70)
                 }, 70)
                 break;
             case "Explosive":
                 tank.cd = hud.fireModeProperties[hud.selectedMode].cd
-                bullet = new Bullet(tank)
-                bullet.type = "explosive"
-                bullets.push(bullet)
+                bullets.push(new Bullet(tank, "explosive"))
                 break;
             default:
                 break;
@@ -431,42 +484,53 @@ addEventListener("keydown", (e) => {
     switch (e.key) {
         case "w":
             tank.steering.forward = true
-            break;
+            break
         case "s":
             tank.steering.backward = true
-            break;
+            break
         case "a":
             tank.steering.left = true
-            break;
+            break
         case "d":
             tank.steering.right = true
-            break;
+            break
         case "1":
             if (hud.selectedMode != 0) {
                 hud.selectedMode = 0
                 fireModeChange()
             }
-            break;
+            break
         case "2":
             if (hud.selectedMode != 1) {
                 hud.selectedMode = 1
                 fireModeChange()
             }
-            break;
+            break
         case "3":
             if (hud.selectedMode != 2) {
                 hud.selectedMode = 2
                 fireModeChange()
             }
-            break;
+            break
         case "4":
             if (hud.selectedMode != 3) {
                 hud.selectedMode = 3
                 fireModeChange()
             }
-            break;
+            break
+        case "Escape":
+            if (panels.length >= 1) {
+                panels.splice(0, 1)
+                unpause()
+            } else {
+                let panel = new Panel("Upgrade shop")
+                panel.upgrade()
+                panels.push(panel)
+                pause()
+            }
+            break
         default:
-            break;
+            break
     }
 })
 
@@ -474,17 +538,17 @@ addEventListener("keyup", (e) => {
     switch (e.key) {
         case "w":
             tank.steering.forward = false
-            break;
+            break
         case "s":
             tank.steering.backward = false
-            break;
+            break
         case "a":
             tank.steering.left = false
-            break;
+            break
         case "d":
             tank.steering.right = false
-            break;
+            break
         default:
-            break;
+            break
     }
 })
