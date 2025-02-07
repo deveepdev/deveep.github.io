@@ -224,7 +224,7 @@ function animate() {
         ctx.textAlign = "left"
         ctx.textBaseline = "top"
         ctx.font = "24px sans-serif"
-        ctx.fillText(level[1] + " [W] [S] [M] [D] [P] [B] [C (copy)] [V (paste)]     [SPACE (play level)]                       NOTE: Copy paste does not work, warning DO NOT USE IT, it WILL crash", 0, 0)
+        ctx.fillText(level[1] + " [W] [S] [M] [D] [P] [B] [C (copy)] [V (paste)]     [SPACE (play level)]", 0, 0)
 
         if (launch.down) {
             ctx.beginPath()
@@ -335,25 +335,40 @@ function serializeLevel(levelArray) {
         return obj; // Preserve other level data (like "editor" mode)
     })
 
-    lvlarr = []
+    arr.splice(0, 3)
 
-    for (let i = 0; i < arr.length; i++) {
-        if (arr[i].type == "Obstacle") {
-            lvlarr.push(new Obstacle(arr[i].x, arr[i].y, arr[i].w, arr[i].h))
-        } else if (arr[i].type == "Ball") {
-            lvlarr.push(new Ball(arr[i].x, arr[i].y))
-        } else if (arr[i].type == "Put") {
-            lvlarr.push(new Put(arr[i].x, arr[i].y))
-        } else {
-            console.log("Foreign object")
-            
-        }
-    }
-
-    return lvlarr
+    return arr
 }
 
-addEventListener('keydown', (e) => {
+
+function splitObjectsFromString(str) {
+    const matches = str.match(/\{[^{}]*\}/g); // Extracts each JSON object
+    if (!matches) return [];
+
+    try {
+        return matches.map(obj => JSON.parse(obj)); // Parse each object
+    } catch (error) {
+        console.error("Error parsing JSON objects:", error);
+        return [];
+    }
+}
+
+function deserializeLevel(arr) {
+    level = []
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i].type == "Obstacle") {
+            level.push(new Obstacle(arr[i].x, arr[i].y, arr[i].w, arr[i].h))
+        } else if (arr[i].type == "Ball") {
+            level.push(new Ball(arr[i].x, arr[i].y))
+        } else if (arr[i].type == "Put") {
+            level.push(new Put(arr[i].x, arr[i].y))
+        } else {
+            console.log("Foreign object")
+        }
+    }
+}
+
+addEventListener('keydown', async (e) => {
     if (level[0] == "editor") {
         switch (e.key) {
             case 's':
@@ -378,8 +393,7 @@ addEventListener('keydown', (e) => {
                 navigator.clipboard.writeText(JSON.stringify(serializeLevel(level)))
                 break;
             case 'v':
-                level.splice(3, level.length-3)
-                level.push(navigator.clipboard.readText())
+                deserializeLevel(JSON.parse(await navigator.clipboard.readText()))
                 break;
             case ' ':
                 level.splice(0, 3)
