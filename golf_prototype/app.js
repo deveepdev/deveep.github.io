@@ -91,7 +91,6 @@ function collision(object1, object2) {
     }
 }
 
-
 function LoadLevel(loadlevel) {
     level = loadlevel
 }
@@ -142,12 +141,12 @@ class Ball {
                 this.stopped = false
                 this.velocity.y *= this.drag
             }
+            
+            ctx.beginPath()
+            ctx.fillStyle = "#fff"
+            ctx.arc(this.position.x, this.position.y, this.radius/2, 0, 2*Math.PI)
+            ctx.fill()
         }
-
-        ctx.beginPath()
-        ctx.fillStyle = "#fff"
-        ctx.arc(this.position.x, this.position.y, this.radius/2, 0, 2*Math.PI)
-        ctx.fill()
     }
 }
 
@@ -168,9 +167,10 @@ const LEVEL = {
     EDITOR: ["editor", "walls", null],
     l1: [new Obstacle(0, 0, 35, canvas.height), new Obstacle(0, 0, canvas.width, 35), new Obstacle(canvas.width-35, 0, 35, canvas.height), new Obstacle(0, canvas.height-35, canvas.width, 35), new Obstacle(canvas.width/2.4, 0, 35, canvas.height/1.5), new Obstacle(canvas.width/1.6, canvas.height/3, 35, canvas.height/1.5), new Put(canvas.width/5, canvas.height/2), new Ball(canvas.width/1.2, canvas.height/2)],
     l2: [new Obstacle(2077,44, -2077, -135), new Obstacle(120,26, -120, 1082), new Obstacle(1921,30, 411, 1078), new Obstacle(68,842, 1902, 203), new Obstacle(508,392, 294, 543), new Obstacle(560,16, 161, 245), new Obstacle(851,38, 330, 309), new Obstacle(1027,835, 297, -368), new Obstacle(866,323, 101, 364), new Obstacle(1161,394, 310, -122), new Obstacle(1324,282, 90, -178), new Obstacle(1394,145, 428, 58), new Obstacle(1560,92, 47, 69), new Obstacle(1666,30, 24, 82), new Obstacle(1733,163, 54, -61), new Obstacle(1637,197, 120, 325), new Obstacle(1090,807, 45, 64), new Obstacle(1375,446, 193, 61), new Obstacle(1516,260, 65, 133), new Obstacle(1396,781, 36, -231), new Obstacle(1465,494, 50, 187), new Obstacle(1578,877, 186, -189), new Obstacle(1615,582, 118, 68), new Obstacle(1793,587, 91, 67), new Obstacle(1804,471, 64, 75), new Obstacle(1746,362, 70, 50), new Obstacle(1866,332, 85, 80), new Obstacle(1786,261, 90, 46), new Obstacle(1857,167, 11, -12), new Obstacle(1866,38, 19, 63), new Obstacle(1795,704, 56, 4), new Obstacle(1848,733, 39, 1), new Obstacle(1845,727, 45, 16), new Obstacle(1793,771, 35, 21), new Obstacle(736,298, -423, 25), new Obstacle(488,357, -155, 26), new Obstacle(303,308, -133, 28), new Obstacle(326,396, -148, -31), new Obstacle(220,240, 160, 23), new Obstacle(301,96, 32, 128), new Obstacle(373,94, 58, 136), new Obstacle(456,82, 35, 123), new Obstacle(157,101, 54, 69), new Obstacle(75,481, 183, 29), new Obstacle(97,573, 257, 3), new Obstacle(85,601, 288, 35), new Obstacle(298,531, 248, 11), new Obstacle(460,606, 101, 186), new Obstacle(122,685, 279, 51), new Obstacle(238,772, 106, 90), new Ball(1238,171), new Put(162,780)],
+    l3: [new Obstacle(343, 175, 21, 566), new Obstacle(364, 717, 943, 24), new Obstacle(344, 173, 982, 21), new Obstacle(425, 189, 22, 481), new Obstacle(483, 229, 23, 492), new Obstacle(541, 192, 23, 479), new Obstacle(600, 230, 20, 493), new Obstacle(659, 196, 23, 475), new Obstacle(720, 232, 30, 488), new Obstacle(777, 189, 22, 494), new Obstacle(828, 221, 24, 496), new Obstacle(880, 189, 22, 493), new Obstacle(939, 224, 20, 500), new Obstacle(995, 189, 16, 495), new Obstacle(1040, 226, 17, 497), new Obstacle(1090, 184, 21, 498), new Obstacle(1146, 228, 18, 499), new Obstacle(1192, 188, 19, 495), new Obstacle(1241, 228, 17, 498), new Obstacle(1281, 190, 23, 496), new Obstacle(1377, 24, 28, 882), new Obstacle(46, 872, 1359, 34), new Obstacle(46, 51, 37, 821), new Obstacle(83, 23, 1322, 28), new Put(205, 442), new Ball(392, 451)],
 }
 
-LoadLevel(LEVEL.EDITOR)
+LoadLevel(LEVEL.l3)
 
 function animate() {
     requestAnimationFrame(animate)
