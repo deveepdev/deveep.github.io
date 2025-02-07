@@ -170,7 +170,7 @@ const LEVEL = {
     l3: [new Obstacle(343, 175, 21, 566), new Obstacle(364, 717, 943, 24), new Obstacle(344, 173, 982, 21), new Obstacle(425, 189, 22, 481), new Obstacle(483, 229, 23, 492), new Obstacle(541, 192, 23, 479), new Obstacle(600, 230, 20, 493), new Obstacle(659, 196, 23, 475), new Obstacle(720, 232, 30, 488), new Obstacle(777, 189, 22, 494), new Obstacle(828, 221, 24, 496), new Obstacle(880, 189, 22, 493), new Obstacle(939, 224, 20, 500), new Obstacle(995, 189, 16, 495), new Obstacle(1040, 226, 17, 497), new Obstacle(1090, 184, 21, 498), new Obstacle(1146, 228, 18, 499), new Obstacle(1192, 188, 19, 495), new Obstacle(1241, 228, 17, 498), new Obstacle(1281, 190, 23, 496), new Obstacle(1377, 24, 28, 882), new Obstacle(46, 872, 1359, 34), new Obstacle(46, 51, 37, 821), new Obstacle(83, 23, 1322, 28), new Put(205, 442), new Ball(392, 451)],
 }
 
-LoadLevel(LEVEL.l3)
+LoadLevel(LEVEL.EDITOR)
 
 function animate() {
     requestAnimationFrame(animate)
