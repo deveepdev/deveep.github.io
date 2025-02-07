@@ -19,7 +19,7 @@ class Hud {
     constructor() {
         this.margin = 15
         this.usd = 0
-        this.fireModes = ["Hoaming", "Single", "Burst", "Explosive"]
+        this.fireModes = ["Homing", "Single", "Burst", "Explosive"]
         this.fireModeProperties = [{cd: 500, lifetime: 1500}, {cd: 250, lifetime: 750}, {cd: 500, lifetime: 550}, {cd: 700, lifetime: 400}]
         this.selectedMode = 1
     }
@@ -212,8 +212,8 @@ class Enemy {
 
 class Bullet {
     constructor(tank, type) {
-        // if (tank instanceof Tank) {}
         this.speed = tank.bullet.speed
+        this.lifetime = hud.fireModeProperties[hud.selectedMode].lifetime
 
         this.type = type
         this.tank = tank
@@ -375,13 +375,13 @@ function animate() {
                 break
             }
             
-            if (bullets[i].type == "hoaming") {
+            if (bullets[i].type == "Homing") {
                 let angle = Math.atan2(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
                 bullets[i].velocity.x = -Math.cos(angle)
                 bullets[i].velocity.y = -Math.sin(angle)
             }
 
-            if (bullets[i].traveled >= hud.fireModeProperties[hud.selectedMode].lifetime && !bullets[i].detonate) {
+            if (bullets[i].traveled >= bullets[i].lifetime && !bullets[i].detonate) {
                 if (bullets[i].type == "explosive") {
                     bullets[i].detonate = true
                 } else {
@@ -392,7 +392,7 @@ function animate() {
             }
 
             let distance = Math.hypot(bullets[i].position.y - mouse.y, bullets[i].position.x - mouse.x)
-            if (bullets[i].type == "hoaming" && distance <= bullets[i].radius/2) {
+            if (bullets[i].type == "Homing" && distance <= bullets[i].radius/2) {
                 bullets.splice(i, 1)
                 break
             }
@@ -445,16 +445,16 @@ addEventListener("mousemove", (e) => {
 function fire() {
     if (tank.cd == 0 && !paused) {
         switch (hud.fireModes[hud.selectedMode]) {
-            case "Hoaming":
-                tank.cd = hud.fireModeProperties[hud.selectedMode].cd
-                bullets.push(new Bullet(tank, "hoaming"))
+            case "Homing":
+                fireModeChange()
+                bullets.push(new Bullet(tank, "Homing"))
                 break;
             case "Single":
-                tank.cd = hud.fireModeProperties[hud.selectedMode].cd
+                fireModeChange()
                 bullets.push(new Bullet(tank, "single"))
                 break;
             case "Burst":
-                tank.cd = hud.fireModeProperties[hud.selectedMode].cd
+                fireModeChange()
                 bullets.push(new Bullet(tank, "burst"))
                 setTimeout(() => {
                     bullets.push(new Bullet(tank, "burst"))
@@ -467,7 +467,7 @@ function fire() {
                 }, 70)
                 break;
             case "Explosive":
-                tank.cd = hud.fireModeProperties[hud.selectedMode].cd
+                fireModeChange()
                 bullets.push(new Bullet(tank, "explosive"))
                 break;
             default:
