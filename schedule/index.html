@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Schedule — polished wizard</title>
+<style>
+  :root{
+    --bg:#0f0f0f; --panel:#181818; --card:#202020; --muted:#b6bcc9;
+    --accent:#4c7fff; --border:#404040; --cell-dark:#202020; --cell-light:#2a2a2a;
+    --select-bg:#151515; --select-color:#d9dff0;
+  }
+
+  html,body{height:100%; margin:0; background:var(--bg); color:var(--select-color); font-family:Arial,system-ui,-apple-system; }
+
+  /* layout: left = table, right = wizard */
+  .wrap {
+    display:flex;
+    gap:28px;
+    padding:28px;
+    box-sizing:border-box;
+    align-items:flex-start;
+  }
+
+  /* ---------- Schedule Table ---------- */
+  .schedule {
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    width: min(860px, 62vw);
+    max-height: calc(100vh - 56px);
+    overflow: auto;
+    background: transparent;
+  }
+  .schedule thead th {
+    background:#303030;
+    position: sticky; top: 0; z-index: 5;
+    padding:10px 12px;
+    font-weight:700;
+  }
+  .schedule th, .schedule td {
+    border:1px solid var(--border);
+    padding:10px 12px;
+    min-width:86px;
+    vertical-align:top;
+    text-align:center;
+  }
+  .schedule tbody th { text-align:left; padding-left:14px; font-weight:700; }
+
+  .schedule tbody tr:nth-child(odd) td,
+  .schedule tbody tr:nth-child(odd) th { background: var(--cell-dark); }
+  .schedule tbody tr:nth-child(even) td,
+  .schedule tbody tr:nth-child(even) th { background: var(--cell-light); }
+
+  .separator td { padding: 3px;}
+
+  /* small entry inside cell */
+  .shift-entry {
+    display:block;
+    margin:0px;
+    padding:6px 8px;
+    border-radius:3px;
+    font-size:12px;
+    font-weight:700;
+    text-align:center;
+    color:inherit;
+    background: rgba(255,255,255,0.02);
+  }
+
+  td.shift-R .shift-entry { background: rgba(35,92,33,0.9); color:#e8f5e9; }
+  td.shift-L .shift-entry { background: rgba(160,95,23,0.95); color:#fff6e6; }
+  td.shift-XL .shift-entry{ background: rgba(111,45,122,0.95); color:#fff; }
+  td.shift-CL .shift-entry{ background: rgba(122,33,33,0.95); color:#fff; }
+  td.shift-CUSTOM .shift-entry{ background: rgba(31,99,162,0.95); color:#eaf4ff; }
+
+  /* ---------- Wizard panel ---------- */
+  .queries {
+    user-select: none;
+    width: 420px;
+    max-height: calc(100vh - 56px);
+    background: var(--panel);
+    padding: 18px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    border-radius: 6px;
+  }
+  /* nice scrollbar */
+  .queries::-webkit-scrollbar { width:10px; }
+  .queries::-webkit-scrollbar-thumb { background:#404040; border-radius:8px; }
+  .queries::-webkit-scrollbar-track { background:#151515; }
+
+  .queries h2 { margin:6px 0 12px; text-align:center; color:var(--accent); font-weight:700; }
+  .progress { font-size:13px; color:var(--muted); text-align:center; margin-bottom:12px; }
+
+  .day-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:14px;
+  }
+
+  .section-title { font-weight:700; color:var(--muted); margin:6px 0 10px; }
+
+  label { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+
+  /* dark selects + inputs */
+  select, input[type="time"], input[type="text"] {
+    background: var(--select-bg);
+    color: var(--select-color);
+    border: 1px solid var(--border);
+    padding:8px 10px;
+    border-radius:6px;
+    width:100%;
+    box-sizing:border-box;
+    outline: none;
+  }
+  select option { background: var(--select-bg); color: var(--select-color); }
+
+  /* shift-type buttons (radio style) */
+  .shift-type { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .shift-type button {
+    flex:1; min-width:48px;
+    background:#232323; border:1px solid var(--border);
+    color:var(--select-color); padding:8px 6px; border-radius:8px; cursor:pointer; font-weight:700;
+  }
+  .shift-type button.active { background:var(--accent); color:white;  }
+
+  .row-actions { display:flex; gap:8px; margin-top:10px; justify-content:flex-end; }
+  .btn { background:transparent; border:1px solid var(--border); color:var(--select-color); padding:8px 10px; border-radius:8px; cursor:pointer; }
+  .btn.primary { background:#303030; font-weight:700; }
+
+  .add-shift { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-top:8px; }
+  .add-shift .btn { flex:1; }
+
+  .shift-slot { border:1px solid #262626; background:#111; padding:10px; border-radius:8px; margin-top:10px; }
+  .assign-row { display:flex; gap:8px; align-items:center; margin-top:8px; }
+  .assign-row select { flex:1; }
+  .remove { background:#2b2b2b; border:1px solid #3a3a3a; padding:6px 8px; border-radius:6px; cursor:pointer; }
+
+  .muted { color:var(--muted); font-size:13px; }
+
+  .summary { font-size:13px; color:var(--muted); margin-top:8px; white-space:pre-wrap; }
+
+  @media (max-width:1100px){
+    .wrap { flex-direction:column; align-items:stretch; gap:12px; padding:14px; }
+    .schedule { width:100%; overflow:auto; }
+    .queries { width:100%; max-height:50vh; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <table class="schedule" id="scheduleTable"></table>
+
+    <div class="queries" id="queries">
+      <h2 id="wizardTitle">Monday</h2>
+      <div class="progress" id="wizardProgress">Day 1 of 7</div>
+      <!-- wizard content injected here -->
+    </div>
+  </div>
+
+<script>
+/* ---------- Data ---------- */
+const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const workers = {
+  insiders: ['Luis','Brenda','Leonel','Lyann','Mathis','Katerine','Alex','Damyen'],
+  drivers:  ['Mathis','Daniel','Julien','Jude','Mario','Juan','Todor','Roland']
+};
+const SHIFT_TYPES = ['R','L','XL','CL'];
+
+/* ---------- Build table (Insiders above their rows ; Drivers above theirs) ---------- */
+const table = document.getElementById('scheduleTable');
+const thead = table.createTHead();
+const headRow = thead.insertRow();
+headRow.insertCell().outerHTML = '<th>Schedule</th>';
+for (const d of weekdays) { const th = document.createElement('th'); th.textContent = d; headRow.appendChild(th); }
+
+const tbody = table.createTBody();
+
+// label (Insiders)
+const insLabelRow = tbody.insertRow();
+insLabelRow.className = 'separator insiders';
+const insCell = insLabelRow.insertCell();
+insCell.colSpan = weekdays.length + 1;
+insCell.textContent = 'Insiders';
+insCell.style.background = '#26267f';
+// rows
+for (const name of workers.insiders) {
+  const tr = tbody.insertRow();
+  const th = document.createElement('th'); th.textContent = name; tr.appendChild(th);
+  for (let i=0;i<weekdays.length;i++) tr.appendChild(document.createElement('td'));
+}
+
+// label (Drivers)
+const drvLabelRow = tbody.insertRow();
+drvLabelRow.className = 'separator drivers';
+const drvCell = drvLabelRow.insertCell();
+drvCell.colSpan = weekdays.length + 1;
+drvCell.textContent = 'Drivers';
+drvCell.style.background = '#7f2626';
+for (const name of workers.drivers) {
+  const tr = tbody.insertRow();
+  const th = document.createElement('th'); th.textContent = name; tr.appendChild(th);
+  for (let i=0;i<weekdays.length;i++) tr.appendChild(document.createElement('td'));
+}
+
+/* helper to find rows for role */
+const allDataRows = () => Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('separator'));
+const insidersCount = workers.insiders.length;
+const driversCount = workers.drivers.length;
+function findRowByName(name, role){
+  if (!name) return null;
+  const rows = allDataRows();
+  const nameLower = name.trim().toLowerCase();
+  if (role === 'insider') {
+    const target = rows.slice(0, insidersCount);
+    return target.find(r => (r.querySelector('th')?.textContent || '').trim().toLowerCase() === nameLower) || null;
+  } else {
+    const target = rows.slice(insidersCount, insidersCount + driversCount);
+    return target.find(r => (r.querySelector('th')?.textContent || '').trim().toLowerCase() === nameLower) || null;
+  }
+}
+
+/* append entry to a person's cell */
+function applyShiftToPerson({ dayIndex, role, name, shiftType, from, to, opener=false }){
+  const row = findRowByName(name, role);
+  if (!row) return false;
+  const cell = row.cells[dayIndex + 1];
+  // create entry text parts
+  const parts = [];
+  if (opener) parts.push('Open');
+  if (shiftType) parts.push(shiftType);
+  if (from || to) {
+    if (from && to) parts.push(`${from}–${to}`);
+    else if (to) parts.push(`til ${to}`);
+    else if (from) parts.push(`from ${from}`);
+  }
+  const txt = parts.join(' • ') || 'Open';
+  const div = document.createElement('div');
+  div.className = 'shift-entry';
+  div.textContent = txt;
+  cell.appendChild(div);
+
+  // color by shiftType (latest one)
+  Array.from(cell.classList).forEach(c => { if (c.startsWith('shift-')) cell.classList.remove(c); });
+  if (SHIFT_TYPES.includes(shiftType)) cell.classList.add('shift-' + shiftType);
+  else if (shiftType) cell.classList.add('shift-CUSTOM');
+  return true;
+}
+
+/* ---------- Wizard UI ---------- */
+const queries = document.getElementById('queries');
+const wizardTitle = document.getElementById('wizardTitle');
+const wizardProgress = document.getElementById('wizardProgress');
+
+let currentDay = 0;
+const STATE = {}; // store day -> { insiders:[], drivers:[] }
+
+/* create select with names for role (insider|driver) */
+function nameSelect(role, includeNone=true) {
+  const sel = document.createElement('select');
+  if (includeNone) { const opt = document.createElement('option'); opt.value=''; opt.textContent='(none)'; sel.appendChild(opt); }
+  const list = role === 'insider' ? workers.insiders : workers.drivers;
+  for (const n of list) { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); }
+  sel.className = 'select-dark';
+  return sel;
+}
+
+/* make shift-type button row, sets container.dataset.selected */
+function makeShiftButtons(initial='') {
+  const container = document.createElement('div');
+  container.className = 'shift-type';
+  container.dataset.selected = initial || '';
+  for (const s of SHIFT_TYPES) {
+    const b = document.createElement('button');
+    b.type='button';
+    b.textContent = s;
+    b.dataset.shift = s;
+    b.addEventListener('click', () => {
+      container.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      container.dataset.selected = s;
+    });
+    container.appendChild(b);
+  }
+  // clear button
+  const clear = document.createElement('button');
+  clear.type='button'; clear.textContent='Clear';
+  clear.addEventListener('click', ()=>{ container.querySelectorAll('button').forEach(x=>x.classList.remove('active')); container.dataset.selected=''; });
+  container.appendChild(clear);
+  return container;
+}
+
+/* create opener block (dropdown + til time + shift buttons) */
+function createOpenerBlock(role) {
+  const wrap = document.createElement('div');
+  wrap.className = 'day-card';
+
+  const label = document.createElement('div'); label.className='section-title'; label.textContent = `Opener (${role})`;
+  wrap.appendChild(label);
+
+  const sel = nameSelect(role, true);
+  wrap.appendChild(sel);
+
+  const tilLabel = document.createElement('label'); tilLabel.textContent='Til (optional)';
+  wrap.appendChild(tilLabel);
+  const til = document.createElement('input'); til.type='time'; wrap.appendChild(til);
+
+  const stLabel = document.createElement('div'); stLabel.className='muted'; stLabel.textContent='Shift type';
+  wrap.appendChild(stLabel);
+  const stButtons = makeShiftButtons();
+  wrap.appendChild(stButtons);
+
+  return { wrap, sel, til, stButtons };
+}
+
+/* create a time-based shift slot: from, til, shift type, assign selects */
+function createShiftSlot(role) {
+  const slot = document.createElement('div');
+  slot.className = 'shift-slot';
+
+  // times row
+  const timesRow = document.createElement('div'); timesRow.style.display='flex'; timesRow.style.gap='8px';
+  const fromInput = document.createElement('input'); fromInput.type='time';
+  const toInput = document.createElement('input'); toInput.type='time';
+  timesRow.appendChild(fromInput); timesRow.appendChild(toInput);
+  slot.appendChild(timesRow);
+
+  // shift-type buttons
+  const stButtons = makeShiftButtons();
+  slot.appendChild(stButtons);
+
+  // assign area
+  const assignLabel = document.createElement('div'); assignLabel.className='muted'; assignLabel.textContent='Assign person(s)';
+  slot.appendChild(assignLabel);
+  const assignContainer = document.createElement('div');
+  assignContainer.className = 'assign-container';
+
+  const firstAssign = document.createElement('div'); firstAssign.className='assign-row';
+  const sel = nameSelect(role, true);
+  firstAssign.appendChild(sel);
+  const addAssignBtn = document.createElement('button'); addAssignBtn.type='button'; addAssignBtn.className='btn'; addAssignBtn.textContent='+';
+  addAssignBtn.title='Add assign slot';
+  addAssignBtn.addEventListener('click', () => {
+    const r = document.createElement('div'); r.className='assign-row';
+    const s = nameSelect(role, true); r.appendChild(s);
+    const rem = document.createElement('button'); rem.type='button'; rem.className='remove'; rem.textContent='-';
+    rem.addEventListener('click', ()=> r.remove());
+    r.appendChild(rem);
+    assignContainer.appendChild(r);
+  });
+  firstAssign.appendChild(addAssignBtn);
+  assignContainer.appendChild(firstAssign);
+  slot.appendChild(assignContainer);
+
+  // remove slot button
+  const remove = document.createElement('div'); remove.style.display='flex'; remove.style.justifyContent='flex-end'; remove.style.marginTop='8px';
+  const remBtn = document.createElement('button'); remBtn.className='remove'; remBtn.textContent='Remove slot';
+  remBtn.addEventListener('click', () => slot.remove());
+  remove.appendChild(remBtn);
+  slot.appendChild(remove);
+
+  return { slot, fromInput, toInput, stButtons, assignContainer };
+}
+
+/* ---------- Render wizard for a day ---------- */
+function renderDay(index) {
+  // header + progress
+  wizardTitle.textContent = weekdays[index];
+  wizardProgress.textContent = `Day ${index+1} of ${weekdays.length}`;
+
+  // clear previous (but keep headings)
+  // remove all children after progress
+  while (queries.children.length > 2) queries.removeChild(queries.lastChild);
+
+  const content = document.createElement('div');
+
+  // INSIDERS: opener + add-shift
+  const insHeader = document.createElement('div'); insHeader.className='section-title'; insHeader.textContent='Insiders';
+  content.appendChild(insHeader);
+
+  const openerIns = createOpenerBlock('insider');
+  content.appendChild(openerIns.wrap);
+
+  const addInsWrap = document.createElement('div'); addInsWrap.className='add-shift';
+  const addInsBtn = document.createElement('button'); addInsBtn.className='btn'; addInsBtn.textContent='+ Add shift';
+  const insSlotsContainer = document.createElement('div'); insSlotsContainer.className='slots-wrap';
+  addInsBtn.addEventListener('click', ()=> { const s = createShiftSlot('insider'); insSlotsContainer.appendChild(s.slot); });
+  addInsWrap.appendChild(addInsBtn);
+  content.appendChild(addInsWrap);
+  content.appendChild(insSlotsContainer);
+
+  // DRIVERS: opener + add-shift
+  const drvHeader = document.createElement('div'); drvHeader.className='section-title'; drvHeader.textContent='Drivers';
+  content.appendChild(drvHeader);
+
+  const openerDrv = createOpenerBlock('driver');
+  content.appendChild(openerDrv.wrap);
+
+  const addDrvWrap = document.createElement('div'); addDrvWrap.className='add-shift';
+  const addDrvBtn = document.createElement('button'); addDrvBtn.className='btn'; addDrvBtn.textContent='+ Add shift';
+  const drvSlotsContainer = document.createElement('div'); drvSlotsContainer.className='slots-wrap';
+  addDrvBtn.addEventListener('click', ()=> { const s = createShiftSlot('driver'); drvSlotsContainer.appendChild(s.slot); });
+  addDrvWrap.appendChild(addDrvBtn);
+  content.appendChild(addDrvWrap);
+  content.appendChild(drvSlotsContainer);
+
+  // controls: prev / skip / submit
+  const controls = document.createElement('div'); controls.className='row-actions';
+  const prev = document.createElement('button'); prev.className='btn'; prev.textContent='Prev'; prev.disabled = index===0;
+  prev.addEventListener('click', ()=> { if (index>0) { currentDay = index-1; renderDay(currentDay); }});
+  const skip = document.createElement('button'); skip.className='btn'; skip.textContent='Skip';
+  skip.addEventListener('click', ()=> { currentDay = Math.min(weekdays.length-1, index+1); renderDay(currentDay); });
+  const submit = document.createElement('button'); submit.className='btn primary'; submit.textContent = index === weekdays.length-1 ? 'Finish' : 'Submit';
+  submit.addEventListener('click', () => {
+    // ensure state record
+    const day = weekdays[index]; STATE[day] = STATE[day] || { insiders:[], drivers:[] };
+
+    /* INSIDER opener */
+    const insName = openerIns.sel.value;
+    const insShiftType = openerIns.stButtons.dataset.selected || '';
+    const insTil = openerIns.til.value || '';
+    if (insName) {
+      STATE[day].insiders.push({ kind:'opener', name: insName, shiftType: insShiftType, to: insTil });
+      applyShiftToPerson({ dayIndex: index, role: 'insider', name: insName, shiftType: insShiftType, from:'', to: insTil, opener:true });
+    }
+
+    /* INSIDER slots */
+    insSlotsContainer.querySelectorAll('.shift-slot').forEach(slot => {
+      const from = slot.querySelectorAll('input[type="time"]')[0]?.value || '';
+      const to = slot.querySelectorAll('input[type="time"]')[1]?.value || '';
+      const st = slot.querySelector('.shift-type')?.dataset?.selected || '';
+      const selects = slot.querySelectorAll('select');
+      selects.forEach(sel => {
+        if (!sel.value) return;
+        STATE[day].insiders.push({ kind: 'slot', name: sel.value, shiftType: st, from, to });
+        applyShiftToPerson({ dayIndex:index, role:'insider', name: sel.value, shiftType: st, from, to, opener:false });
+      });
+    });
+
+    /* DRIVER opener */
+    const drvName = openerDrv.sel.value;
+    const drvShiftType = openerDrv.stButtons.dataset.selected || '';
+    const drvTil = openerDrv.til.value || '';
+    if (drvName) {
+      STATE[day].drivers.push({ kind:'opener', name: drvName, shiftType: drvShiftType, to: drvTil });
+      applyShiftToPerson({ dayIndex: index, role: 'driver', name: drvName, shiftType: drvShiftType, from:'', to: drvTil, opener:true });
+    }
+
+    /* DRIVER slots */
+    drvSlotsContainer.querySelectorAll('.shift-slot').forEach(slot => {
+      const from = slot.querySelectorAll('input[type="time"]')[0]?.value || '';
+      const to = slot.querySelectorAll('input[type="time"]')[1]?.value || '';
+      const st = slot.querySelector('.shift-type')?.dataset?.selected || '';
+      const selects = slot.querySelectorAll('select');
+      selects.forEach(sel => {
+        if (!sel.value) return;
+        STATE[day].drivers.push({ kind: 'slot', name: sel.value, shiftType: st, from, to });
+        applyShiftToPerson({ dayIndex:index, role:'driver', name: sel.value, shiftType: st, from, to, opener:false });
+      });
+    });
+
+    // next day or finish
+    if (index < weekdays.length - 1) {
+      currentDay = index + 1; renderDay(currentDay);
+    } else {
+      showFinish();
+    }
+  });
+
+  controls.appendChild(prev); controls.appendChild(skip); controls.appendChild(submit);
+  content.appendChild(controls);
+
+  queries.appendChild(content);
+}
+
+/* show finish summary */
+function showFinish() {
+  // clear wizard area after header + progress
+  while (queries.children.length > 2) queries.removeChild(queries.lastChild);
+
+  const done = document.createElement('div');
+  done.className = 'day-card';
+  const h = document.createElement('h3'); h.textContent = 'All done — Summary'; done.appendChild(h);
+
+  const summary = document.createElement('div'); summary.className='summary';
+  let text = '';
+  for (const d of weekdays) {
+    const s = STATE[d] || { insiders:[], drivers:[] };
+    const inss = s.insiders.map(x => `${x.name || '-'}${x.shiftType ? ' • '+x.shiftType: ''}${x.from||x.to? ' • ' + (x.from? x.from + '–' + x.to : 'til '+x.to): ''}`).join(', ') || '-';
+    const drs = s.drivers.map(x => `${x.name || '-'}${x.shiftType ? ' • '+x.shiftType: ''}${x.from||x.to? ' • ' + (x.from? x.from + '–' + x.to : 'til '+x.to): ''}`).join(', ') || '-';
+    text += `${d}\n  Insiders: ${inss}\n  Drivers: ${drs}\n\n`;
+  }
+  summary.textContent = text;
+  done.appendChild(summary);
+
+  const controls = document.createElement('div'); controls.className='row-actions';
+  const edit = document.createElement('button'); edit.className='btn'; edit.textContent='Edit day'; edit.addEventListener('click', ()=>{ currentDay = 0; renderDay(0); });
+  const clear = document.createElement('button'); clear.className='btn'; clear.textContent='Clear all';
+  clear.addEventListener('click', ()=>{
+    if (!confirm('Clear all assigned shifts from the table?')) return;
+    // clear cells
+    Array.from(table.querySelectorAll('td')).forEach(td => { td.innerHTML=''; Array.from(td.classList).forEach(c => { if (c.startsWith('shift-')) td.classList.remove(c); }); });
+    for (const k of Object.keys(STATE)) delete STATE[k];
+    currentDay = 0; renderDay(0);
+  });
+  controls.appendChild(edit); controls.appendChild(clear);
+  done.appendChild(controls);
+
+  queries.appendChild(done);
+}
+
+/* start */
+currentDay = 0;
+renderDay(currentDay);
+
+</script>
+</body>
+</html>
