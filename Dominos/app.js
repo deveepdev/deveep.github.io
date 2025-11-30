@@ -340,7 +340,7 @@ function _SOLUTION_PIZZA_FEAST_BASE_(q) {
             if (cleanedFeast.includes(symbol)) {
                 selected.textContent = topping[1]
                 element.style.background = "green"
-                setTimeout(() => NEW_QUERY(q), 400)
+                setTimeout(() => QUERY_PIZZA_FEAST(q), 400)
             } else {
                 selected.textContent = topping[1]
                 element.style.background = "red"
@@ -409,4 +409,5 @@ function NEW_QUERY() {
     }
 }
 
-NEW_QUERY()
+
+QUERY_PIZZA_FEAST()
