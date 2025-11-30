@@ -296,7 +296,7 @@ function _SOLUTION_SAUCES_(q) {
     })
 }
 function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
-
+solution.innerHTML = ""
     // Clean the feast symbols (remove + - ~)
     let cleanedFeast = q.map(sym => sym.replace(/^[+\-~]/, "")).filter(sym => !Object.keys(SAUCES).includes(sym)).filter(sym => !Object.keys(CUT_TABLE_OPTIONS).includes(sym));
     let found = 0
@@ -411,3 +411,4 @@ function NEW_QUERY() {
 
 
 QUERY_PIZZA_FEAST()
+
