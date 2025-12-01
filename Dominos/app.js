@@ -4,6 +4,8 @@ const query = document.querySelector(".query")
 const selected = document.querySelector(".selected")
 const solution = document.querySelector(".solution")
 
+let score = 0
+
 const TOPPINGS_INVERTED_LIST = {
     "American Cheese": "A",
     "Beef": "B",
@@ -63,7 +65,7 @@ const TOPPINGS = {
 }
 
 const TOPPINGS_LIST = [
-    ["C", "Cheese (Mozzarella)"],
+    ["PL", "Brooklyn Pepperoni"],
     ["B", "Beef"],
     ["H", "Ham"],
     ["K", "Bacon"],
@@ -71,12 +73,13 @@ const TOPPINGS_LIST = [
     ["P", "Pepperoni"],
     ["D", "Chicken"],
     ["S", "Italian Sausage"],
-    ["PL", "Brooklyn Pepperoni"],
-    ["Ca", "American Cheese"],
+    ["Parasiag", "Parmesan Asiago"],
+    ["C", "Cheese (Mozzarella)"],
     ["E", "Cheddar Cheese"],
     ["Feta", "Feta Cheese"],
+    // provolone also "W"
     ["Prov", "Provolone Cheese"],
-    ["Parasiag", "Parmesan Asiago"],
+    ["Ca", "American Cheese"],
     ["MIX", "Cheddar/Mozzarella Mix"],
     ["G", "Green Peppers"],
     ["J", "Jalapeno Peppers"],
@@ -163,36 +166,174 @@ const CUT_TABLE_OPTIONS = {
     // verify
 }
 
+
+
+// quantities LRE  - Light-0, Regular-1, Extra-2 -  *** IN OZ ***
 const DOUGH = {
-    "10in": {
-        "Per-Tray": 10,
-        "Uses": ["Small pizza", "12in New-York style", "Brooklyn Style Pizza"]
+    IN10: {
+        Quantities: {
+            // PIZZA CHEESE
+            "C": {
+                _LRE_: [2.5, 3.5, 1.5],
+                _LRE_CHEESE_ONLY_: [2.5, 5.25, 1.75]
+            },
+
+            // CHEDDAR / PROVOLONE
+            "E": { _LRE_: [0.5, 1, 1.5] },
+            "PROV": { _LRE_: [0.5, 1, 1.5] },
+
+            // FETA / PARM ASIAGO
+            "FETA": { _LRE_: [0.5, 1, 1.5] },
+            "PARASIAG": { _LRE_: [0.5, 1, 1.5] },
+
+            // PIZZA SAUCE / MARINARA SAUCE
+            "X": { _LRE_: [1.5, 3, 4.5] },
+            "XM": { _LRE_: [1.5, 3, 4.5] },
+
+            // ALFREDO / GARLIC PARM / RANCH / BBQ
+            "XF": { _LRE_: [0.75, 1.5, 2.25] },
+            "XW": { _LRE_: [0.75, 1.5, 2.25] },
+            "RD": { _LRE_: [0.75, 1.5, 2.25] },
+            "Q": { _LRE_: [0.75, 1.5, 2.25] },
+
+            // AMERICAN CHEESE
+            "CA": 4
+        },
+        Tray: 10,
+        Uses: ["Small pizza", "12in New-York style", "Brooklyn Style Pizza"]
     },
-    "12in": {
-        "Per-Tray": 8,
-        "Uses": ["Medium pizza", "14in New-York style", "Cheezy Bread", "Bread sticks", "CinnaStix"]
+
+    IN12: {
+        Quantities: {
+            // PIZZA CHEESE
+            "C": {
+                _LRE_: [3.5, 5, 2.5],
+                _LRE_CHEESE_ONLY_: [3.75, 7.5, 2.5]
+            },
+
+            // CHEDDAR / PROVOLONE
+            "E": { _LRE_: [1, 2, 3] },
+            "PROV": { _LRE_: [1, 2, 3] },
+
+            // FETA / PARM ASIAGO
+            "FETA": { _LRE_: [0.75, 1.5, 2.25] },
+            "PARASIAG": { _LRE_: [0.75, 1.5, 2.25] },
+
+            // PIZZA SAUCE / MARINARA SAUCE
+            "X": { _LRE_: [2.1, 4.25, 6.3] },
+            "XM": { _LRE_: [2.1, 4.25, 6.3] },
+
+            // ALFREDO / GARLIC PARM / RANCH / BBQ
+            "XF": { _LRE_: [1.5, 3, 4.5] },
+            "XW": { _LRE_: [1.5, 3, 4.5] },
+            "RD": { _LRE_: [1.5, 3, 4.5] },
+            "Q": { _LRE_: [1.5, 3, 4.5] },
+
+            // AMERICAN CHEESE
+            "CA": 6
+        },
+        Tray: 8,
+        Uses: ["Medium pizza", "14in New-York style", "Cheezy Bread", "Bread sticks", "CinnaStix"]
     },
-    "14in": {
-        "Per-Tray": 6,
-        "Uses": ["Large pizza", "16in New-York style", "Stuffed Bread/Pain Farci"]
+
+    IN14: {
+        Quantities: {
+            // PIZZA CHEESE
+            "C": {
+                _LRE_: [5, 7, 3.5],
+                _LRE_CHEESE_ONLY_: [5, 10.5, 3.5]
+            },
+
+            // CHEDDAR / PROVOLONE
+            "E": { _LRE_: [1.25, 2.5, 3.7] },
+            "PROV": { _LRE_: [1.25, 2.5, 3.7] },
+
+            // FETA / PARM ASIAGO
+            "FETA": { _LRE_: [1, 2, 3] },
+            "PARASIAG": { _LRE_: [1, 2, 3] },
+
+            // PIZZA SAUCE / MARINARA SAUCE
+            "X": { _LRE_: [3, 6, 9] },
+            "XM": { _LRE_: [3, 6, 9] },
+
+            // ALFREDO / GARLIC PARM / RANCH / BBQ
+            "XF": { _LRE_: [2, 4, 6] },
+            "XW": { _LRE_: [2, 4, 6] },
+            "RD": { _LRE_: [2, 4, 6] },
+            "Q": { _LRE_: [2, 4, 6] },
+
+            // AMERICAN CHEESE
+            "CA": 7
+        },
+        Tray: 6,
+        Uses: ["Large pizza", "16in New-York style", "Stuffed Bread/Pain Farci"]
     },
-    "16in": {
-        "Per-Tray": 5,
-        "Uses": ["Extra Large pizza"]
+
+    IN16: {
+        Quantities: {
+            // PIZZA CHEESE
+            "C": {
+                _LRE_: [6.5, 9, 4.5],
+                _LRE_CHEESE_ONLY_: [6.75, 13.5, 4.5]
+            },
+
+            // CHEDDAR / PROVOLONE
+            "E": { _LRE_: [1.75, 3.5, 5.2] },
+            "PROV": { _LRE_: [1.75, 3.5, 5.2] },
+
+            // FETA / PARM ASIAGO
+            "FETA": { _LRE_: [1.25, 2.5, 3.75] },
+            "PARASIAG": { _LRE_: [1.25, 2.5, 3.75] },
+
+            // PIZZA SAUCE / MARINARA SAUCE
+            "X": { _LRE_: [4, 8, 12] },
+            "XM": { _LRE_: [4, 8, 12] },
+
+            // ALFREDO / GARLIC PARM / RANCH / BBQ
+            "XF": { _LRE_: [2.5, 5, 7.5] },
+            "XW": { _LRE_: [2.5, 5, 7.5] },
+            _RD_: { _LRE_: [2.5, 5, 7.5] },
+            "Q": { _LRE_: [2.5, 5, 7.5] },
+
+            // AMERICAN CHEESE
+            "CA": 9
+        },
+        Tray: 5,
+        Uses: ["Extra Large pizza"]
     },
-    "Pan": {
-        "Per-Tray": 8,
-        "Uses": ["Pan Pizza (12in only)", "12in Stuffed Crust", "(32xCinna Bites/32xParm Bites) 16x2"]
+
+    Pan: {
+        Quantities: {
+            // PIZZA CHEESE
+            "C": {
+                _LRE_: [2.25, 3, 1.5],
+                _LRE_CHEESE_ONLY_: [2.25, 4.5, 1.5]
+            },
+
+            // PROVOLONE
+            "PROV": 4,
+
+            // ALL SAUCES (X, XM, XF, XW, RD, Q)
+            "X": 3,
+            "XM": 3,
+            "XF": 3,
+            "XW": 3,
+            _RD_: 3,
+            "Q": 3
+        },
+        Tray: 8,
+        Uses: ["Pan Pizza (12in only)", "12in Stuffed Crust", "(32xCinna Bites/32xParm Bites) 16x2"]
     },
-    "Gluten-Free": {
-        "Per-Tray": "Bags",
-        "Uses": ["Gluten-Free Pizza (10in only)"]
+
+    Gluten_free: {
+        Uses: ["Gluten-Free Pizza (10in only)"]
     },
-    "Croustimince": {
-        "Per-Tray": "Bags",
-        "Uses": ["Croustimince Pizza (10in, 12in, 14in)"]
+
+    Croustimince: {
+        Uses: ["Croustimince Pizza (10in, 12in, 14in)"]
     }
 }
+
 
 const PIZZA_FEAST = {
     "Cheese Only": ["X", "+C"],
@@ -204,19 +345,20 @@ const PIZZA_FEAST = {
     "Hawaiian": ["X", "+C", "H", "N"],
     "Mediterranean": ["X", "C", "R", "T", "Feta", "O"],
     "Mexican": ["X", "+C", "B", "Z", "R", "O"],
-    "Philly Cheese Steak": ["-X", "Ca", "St", "G", "M", "Prov", "O"],
+    "Philly Cheese Steak": ["Ca", "St", "G", "M", "Prov", "O"],
     "Chicken Bacon BBQ": ["Q", "C", "D", "G", "E", "O", "K"],
     "Chicken Bacon Ranch": ["RD", "C", "D", "G", "T", "E", "K"],
     "Chicken Bacon Alfredo": ["XF", "C", "M", "D", "Prov", "E", "O", "K"],
     "Canadian/Quebecois": ["X", "+C", "P", "M", "K"],
     "Toute Garnie": ["X", "C", "P", "G", "M"],
-    "Tropical": ["X", "+C", "H", "N", "K"],
+    "Tropical": ["X", "+C", "H", "+N", "K"],
     "Veggie": ["X", "C", "G", "M", "R", "T", "O"],
     "Spinach & Feta": ["Sp", "C", "Feta", "Prov", "Parasiag", "O", "XF"],
     "6 Cheese": ["X", "C", "E", "Prov", "Feta", "Parasiag", "**OREG**"],
     "Pacific Veggie": ["X", "Sp", "C", "M", "R", "Rp", "T", "Prov", "Feta", "O", "**GAR_HERB**"],
-    "Authentic": ["Xm", "+C", "+P", "M", "G"],
+    "Authentic": ["XM", "+C", "+P", "M", "G"],
 }
+
 
 const SPECIALITY_CHICKEN = {}
 const PASTA = {}
@@ -237,6 +379,8 @@ function _SOLUTION_TOPPINGS_MEATS_(q) {
                 selected.textContent = topping[1]
                 element.style.background = "green"
                 setTimeout(() => NEW_QUERY(), 400)
+                score++
+                selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
                 element.style.background = "red"
@@ -254,6 +398,8 @@ function _SOLUTION_TOPPINGS_VEGETABLES_(q) {
                 selected.textContent = topping[1]
                 element.style.background = "green"
                 setTimeout(() => NEW_QUERY(), 400)
+                score++
+                selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
                 element.style.background = "red"
@@ -271,6 +417,8 @@ function _SOLUTION_TOPPINGS_CHEESES_(q) {
                 selected.textContent = topping[1]
                 element.style.background = "green"
                 setTimeout(() => NEW_QUERY(), 400)
+                score++
+                selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
                 element.style.background = "red"
@@ -288,6 +436,8 @@ function _SOLUTION_SAUCES_(q) {
                 selected.textContent = sauce[1]
                 element.style.background = "green"
                 setTimeout(() => NEW_QUERY(), 400)
+                score++
+                selected.textContent = "score; " + score
             } else {
                 selected.textContent = sauce[1]
                 element.style.background = "red"
@@ -295,38 +445,184 @@ function _SOLUTION_SAUCES_(q) {
         })
     })
 }
+
+// SPF - SOLUTION PIZZA FEAST
+let _SPF_EXTRA_ACTIVE_ = false
 function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
-solution.innerHTML = ""
+    solution.innerHTML = ""
     // Clean the feast symbols (remove + - ~)
-    let cleanedFeast = q.map(sym => sym.replace(/^[+\-~]/, "")).filter(sym => !Object.keys(SAUCES).includes(sym)).filter(sym => !Object.keys(CUT_TABLE_OPTIONS).includes(sym));
-    let found = 0
+    let check_sauce = q.map(sym => sym.replace(/^[+\-~]/, ""))
+    let skip_base_query = false
+    if (check_sauce.filter(sym => !Object.keys(SAUCES).includes(sym))) {
+        skip_base_query = true
+    }
 
-    TOPPINGS_LIST.forEach(topping => {
-        let symbol = topping[0]
+    let q_filtered = q.map(sym => sym.replace(/^[\-~]/, "")).filter(sym => !Object.keys(SAUCES).includes(sym)).filter(sym => !Object.keys(CUT_TABLE_OPTIONS).includes(sym))
 
-        let element = document.createElement("div")
-        element.textContent = symbol
-        solution.appendChild(element)
+    let _EXTRA_ = document.createElement("div")
+    _EXTRA_.className = "extra-button"
+    _EXTRA_.textContent = "EXTRA"
+    solution.appendChild(_EXTRA_)
 
-        element.addEventListener("click", () => {
-            if (element.id !== "checked") {
-                element.id = "checked"
-                if (cleanedFeast.includes(symbol)) {
-                    selected.textContent = topping[1]
-                    element.style.background = "green"
-                    found++
-                } else {
-                    selected.textContent = topping[1]
-                    element.style.background = "red"
+    let _TABS_ = document.createElement("div")
+    _TABS_.className = "extra-button"
+    _TABS_.textContent = "MEATS"
+    solution.appendChild(_TABS_)
+
+    let _WRAPPER_ = document.createElement("WRAPPER")
+    _WRAPPER_.appendChild(_EXTRA_)
+    _WRAPPER_.appendChild(_TABS_)
+    _WRAPPER_.className = "spf-wrapper"
+
+    let TAB = 2
+    _TABS_.addEventListener("click", () => {
+        console.log(TAB);
+        
+        TAB++
+        if (TAB > 2) {
+            TAB = 0
+        }
+        _TABS_.textContent = ["MEATS", "VEGGIES", "CHEESES"][TAB]
+                    
+        let _SPF_TOPPINGS_WRAPPER_ = document.createElement("WRAPPER")
+        _SPF_TOPPINGS_WRAPPER_.className = "spf-wrapper"
+        switch (TAB) {
+            case 0:
+                solution.innerHTML = ""
+                solution.appendChild(_WRAPPER_)
+                solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
+                TOPPINGS_LIST_MEATS.forEach(topping => {
+                    _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_)
+                })
+                break;
+            case 1:
+                solution.innerHTML = ""
+                solution.appendChild(_WRAPPER_)
+                solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
+                TOPPINGS_LIST_VEGETABLES.forEach(topping => {
+                    _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_)
+                })
+                break;
+            case 2:
+                solution.innerHTML = ""
+                solution.appendChild(_WRAPPER_)
+                solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
+                    
+                TOPPINGS_LIST_CHEESES.forEach(topping => {
+                    _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_)
+                })
+                break;
+        }
+    })
+
+    _TABS_.click()
+
+    _EXTRA_.addEventListener("click", () => {
+        _SPF_EXTRA_ACTIVE_ = !_SPF_EXTRA_ACTIVE_
+        if (_SPF_EXTRA_ACTIVE_) {
+            _EXTRA_.style.color = "#0f0"
+        } else {
+            _EXTRA_.style.color = "#777"
+        }
+    })
+
+    // TOPPINGS_LIST.forEach(topping => {
+    //     let symbol = topping[0]
+
+    //     let element = document.createElement("div")
+    //     element.textContent = symbol
+    //     solution.appendChild(element)
+
+    //     element.addEventListener("click", () => {
+    //         if (element.id !== "checked") {
+    //             if (_SPF_EXTRA_ACTIVE_) {
+    //                 if (!symbol.startsWith("+")) {
+    //                     symbol = "+" + symbol
+    //                     _SPF_EXTRA_ACTIVE_ = false
+    //                     _EXTRA_.style.color = "#777"
+    //                 }
+    //             }
+    //             if (q_filtered.includes(symbol)) {
+    //                 element.id = "checked"
+    //                 selected.textContent = topping[1]
+    //                 element.style.background = "green"
+    //                 found++
+    //             } else {
+    //                 selected.textContent = "Incorrect: " + topping[1]
+    //                 element.style.background = "red"
+    //                 if (symbol.startsWith("+")) {
+    //                     symbol = symbol.slice(1)
+    //                 }
+    //             }
+    //         }
+
+    //         if (found == q_filtered.length) {
+    //             selected.textContent = "Correct! All ingredients found."
+    //             if (skip_base_query) {
+    //                 setTimeout(() => NEW_QUERY(4), 400)
+    //                 score++
+    //                 selected.textContent = "score; " + score
+    //             } else {
+    //                 setTimeout(() => QUERY_PIZZA_FEAST_BASE(pizzaName, q), 400)
+    //                 score++
+    //                 selected.textContent = "score; " + score
+    //             }
+    //         }
+    //     })
+    // })
+
+}
+
+let _SPF_FOUND_ = 0
+function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_) {
+    let symbol = topping[0]
+
+    let element = document.createElement("div")
+    element.textContent = symbol
+    _SPF_TOPPINGS_WRAPPER_.appendChild(element)
+
+    element.addEventListener("click", () => {
+        if (element.id !== "checked") {
+            if (_SPF_EXTRA_ACTIVE_) {
+                if (!symbol.startsWith("+")) {
+                    symbol = "+" + symbol
+                    _SPF_EXTRA_ACTIVE_ = false
+                    _EXTRA_.style.color = "#777"
                 }
             }
-            if (found == cleanedFeast.length) {
-                selected.textContent = "Correct! All ingredients found."
-                setTimeout(() => QUERY_PIZZA_FEAST_BASE(pizzaName, q), 400)
+            if (q_filtered.includes(symbol)) {
+                element.id = "checked"
+                selected.textContent = topping[1]
+                element.style.background = "green"
+                _SPF_FOUND_++
+            } else {
+                selected.textContent = "Incorrect: " + topping[1]
+                element.style.background = "red"
+                if (symbol.startsWith("+")) {
+                    symbol = symbol.slice(1)
+                }
             }
-        })
+        }
+
+        console.log(_SPF_FOUND_, q_filtered.length);
+        
+
+        if (_SPF_FOUND_ === q_filtered.length) {
+            selected.textContent = "Correct! All ingredients found."
+            _SPF_FOUND_ = 0
+            if (skip_base_query) {
+                setTimeout(() => QUERY_PIZZA_FEAST(4), 400)
+                score++
+                selected.textContent = "score; " + score
+            } else {
+                setTimeout(() => QUERY_PIZZA_FEAST_BASE(pizzaName, q), 400)
+                score++
+                selected.textContent = "score; " + score
+            }
+        }
     })
 }
+
 function _SOLUTION_PIZZA_FEAST_BASE_(q) {
     let cleanedFeast = q.find(item => Object.keys(SAUCES).includes(item))
     SAUCES_LIST.forEach(topping => {
@@ -341,6 +637,8 @@ function _SOLUTION_PIZZA_FEAST_BASE_(q) {
                 selected.textContent = topping[1]
                 element.style.background = "green"
                 setTimeout(() => QUERY_PIZZA_FEAST(q), 400)
+                score++
+                selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
                 element.style.background = "red"
@@ -393,22 +691,22 @@ function QUERY_PIZZA_FEAST_BASE(pizzaName, q) {
     }
 }
 
-function NEW_QUERY() {
+function NEW_QUERY(exclude) {
     solution.innerHTML = ""
     let r = Math.floor(Math.random() * 5)
     if (r == 0) {
         QUERY_TOPPINGS_MEATS()
-    } else if (r == 1) {
+    } else if (r == 1 && exclude != 1) {
         QUERY_TOPPINGS_VEGETABLES()
-    } else if (r == 2) {
+    } else if (r == 2 && exclude != 2) {
         QUERY_TOPPINGS_CHEESES()
-    } else if (r == 3) {
+    } else if (r == 3 && exclude != 3) {
         QUERY_SAUCES()
-    } else if (r == 4) {
+    } else if (r == 4 && exclude != 4) {
         QUERY_PIZZA_FEAST()
+    } else {
+        NEW_QUERY(exclude)
     }
 }
 
-
 QUERY_PIZZA_FEAST()
-
