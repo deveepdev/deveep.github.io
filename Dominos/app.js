@@ -95,37 +95,37 @@ const TOPPINGS_LIST = [
 ]
 
 const TOPPINGS_LIST_MEATS = [
+    ["P", "Pepperoni"],
+    ["PL", "Brooklyn Pepperoni"],
+    ["D", "Chicken"],
     ["B", "Beef"],
+    ["S", "Italian Sausage"],
     ["H", "Ham"],
     ["K", "Bacon"],
     ["St", "Philly Steak"],
-    ["P", "Pepperoni"],
-    ["D", "Chicken"],
-    ["S", "Italian Sausage"],
-    ["PL", "Brooklyn Pepperoni"],
 ]
 
 const TOPPINGS_LIST_VEGETABLES = [
     ["G", "Green Peppers"],
-    ["J", "Jalapeno Peppers"],
     ["M", "Mushrooms"],
-    ["N", "Pineapple"],
     ["O", "Onions"],
-    ["R", "Black Olives"],
+    ["N", "Pineapple"],
     ["T", "Tomato"],
+    ["R", "Black Olives"],
     ["V", "Green Olives"],
+    ["J", "Jalapeno Peppers"],
     ["Z", "Banana Peppers"],
     ["Rp", "Roasted Red Peppers"],
     ["Sp", "Spinach"],
 ]
 
 const TOPPINGS_LIST_CHEESES = [
-    ["Ca", "American Cheese"],
     ["C", "Cheese (Mozzarella)"],
     ["E", "Cheddar Cheese"],
-    ["Feta", "Feta Cheese"],
     ["Prov", "Provolone Cheese"],
+    ["Feta", "Feta Cheese"],
     ["Parasiag", "Parmesan Asiago"],
+    ["Ca", "American Cheese"],
     ["MIX", "Cheddar/Mozzarella Mix"],
 ]
 
@@ -377,7 +377,7 @@ function _SOLUTION_TOPPINGS_MEATS_(q) {
         element.addEventListener("click", () => {
             if (topping[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = topping[1]
-                element.style.background = "#6cfe9050"
+                element.style.background = "#6cfe9075"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
@@ -396,7 +396,7 @@ function _SOLUTION_TOPPINGS_VEGETABLES_(q) {
         element.addEventListener("click", () => {
             if (topping[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = topping[1]
-                element.style.background = "#6cfe9050"
+                element.style.background = "#6cfe9075"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
@@ -415,7 +415,7 @@ function _SOLUTION_TOPPINGS_CHEESES_(q) {
         element.addEventListener("click", () => {
             if (topping[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = topping[1]
-                element.style.background = "#6cfe9050"
+                element.style.background = "#6cfe9075"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
@@ -434,7 +434,7 @@ function _SOLUTION_SAUCES_(q) {
         element.addEventListener("click", () => {
             if (sauce[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = sauce[1]
-                element.style.background = "#6cfe9050"
+                element.style.background = "#6cfe9075"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
@@ -451,11 +451,7 @@ let _SPF_EXTRA_ACTIVE_ = false
 function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
     solution.innerHTML = ""
     // Clean the feast symbols (remove + - ~)
-    let check_sauce = q.map(sym => sym.replace(/^[+\-~]/, ""))
-    let skip_base_query = false
-    if (check_sauce.filter(sym => !Object.keys(SAUCES).includes(sym))) {
-        skip_base_query = true
-    }
+   let skip_base_query = !q.some(item => Object.keys(SAUCES).includes(item));
 
     let q_filtered = q.map(sym => sym.replace(/^[\-~]/, "")).filter(sym => !Object.keys(SAUCES).includes(sym)).filter(sym => !Object.keys(CUT_TABLE_OPTIONS).includes(sym))
 
@@ -485,13 +481,13 @@ function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
         solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
 
         TOPPINGS_LIST_MEATS.forEach(topping => {
-            _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "meat-symbol")
+            _SPF_(q, topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "meat-symbol")
         })
         TOPPINGS_LIST_VEGETABLES.forEach(topping => {
-            _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "veggie-symbol")
+            _SPF_(q, topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "veggie-symbol")
         })
         TOPPINGS_LIST_CHEESES.forEach(topping => {
-            _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "cheese-symbol")
+            _SPF_(q, topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "cheese-symbol")
         })
 
 
@@ -502,7 +498,7 @@ function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
         if (TAB > 2) {
             TAB = 0
         }
-        _TABS_.textContent = ["MEATS", "VEGGIES", "CHEESES"][TAB]
+        _TABS_.textContent = ["VEGGIES", "CHEESES", "MEATS"][TAB]
 
 
         switch (TAB) {
@@ -534,7 +530,7 @@ function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
 }
 
 let _SPF_FOUND_ = 0
-function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, classname) {
+function _SPF_(q, topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, classname) {
     let symbol = topping[0]
 
     let element = document.createElement("div")
@@ -565,14 +561,11 @@ function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TO
             }
         }
 
-        console.log(_SPF_FOUND_, q_filtered.length);
-        
-
         if (_SPF_FOUND_ === q_filtered.length) {
             selected.textContent = "Correct! All ingredients found."
             _SPF_FOUND_ = 0
             if (skip_base_query) {
-                setTimeout(() => QUERY_PIZZA_FEAST(4), 400)
+                setTimeout(() => QUERY_PIZZA_FEAST(), 400)
                 score++
                 selected.textContent = "score; " + score
             } else {
@@ -586,17 +579,22 @@ function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TO
 
 function _SOLUTION_PIZZA_FEAST_BASE_(q) {
     let cleanedFeast = q.find(item => Object.keys(SAUCES).includes(item))
+
+    let _WRAPPER_ = document.createElement("WRAPPER")
+    _WRAPPER_.className = "spf-wrapper"
+    solution.appendChild(_WRAPPER_)
+
     SAUCES_LIST.forEach(topping => {
         let symbol = topping[0]
 
         let element = document.createElement("div")
         element.textContent = symbol
-        solution.appendChild(element)
+        _WRAPPER_.appendChild(element)
 
         element.addEventListener("click", () => {
             if (cleanedFeast.includes(symbol)) {
                 selected.textContent = topping[1]
-                element.style.background = "#6cfe9050"
+                element.style.background = "#6cfe9075"
                 setTimeout(() => QUERY_PIZZA_FEAST(q), 400)
                 score++
                 selected.textContent = "score; " + score
@@ -640,14 +638,13 @@ function QUERY_PIZZA_FEAST() {
 }
 function QUERY_PIZZA_FEAST_BASE(pizzaName, q) {
     if (q != undefined) {
-        console.log(q);
         solution.innerHTML = ""
-        query.textContent = `What base is used on the ${pizzaName} Pizza Feast`
+        query.innerHTML = `<p>What base is used on the <span style="color: #6cfe90; font-weight: 600;">${pizzaName}</span> Pizza</p>`
         _SOLUTION_PIZZA_FEAST_BASE_(q)
     } else {
         let RdPizzaFeast = Math.floor(Math.random() * Object.keys(PIZZA_FEAST).length)
         let pizzaName = Object.keys(PIZZA_FEAST)[RdPizzaFeast]
-        query.textContent = `What base is used on the ${pizzaName} Pizza Feast`
+        query.innerHTML = `<p>What base is used on the <span style="color: #6cfe90; font-weight: 600;">${pizzaName}</span> Pizza</p>`
         _SOLUTION_PIZZA_FEAST_BASE_(PIZZA_FEAST[pizzaName])
     }
 }
