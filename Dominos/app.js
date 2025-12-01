@@ -377,13 +377,13 @@ function _SOLUTION_TOPPINGS_MEATS_(q) {
         element.addEventListener("click", () => {
             if (topping[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = topping[1]
-                element.style.background = "green"
+                element.style.background = "#6cfe9050"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
-                element.style.background = "red"
+                element.style.background = "#7f2727ff"
             }
         })
     })
@@ -396,13 +396,13 @@ function _SOLUTION_TOPPINGS_VEGETABLES_(q) {
         element.addEventListener("click", () => {
             if (topping[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = topping[1]
-                element.style.background = "green"
+                element.style.background = "#6cfe9050"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
-                element.style.background = "red"
+                element.style.background = "#7f2727ff"
             }
         })
     })
@@ -415,13 +415,13 @@ function _SOLUTION_TOPPINGS_CHEESES_(q) {
         element.addEventListener("click", () => {
             if (topping[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = topping[1]
-                element.style.background = "green"
+                element.style.background = "#6cfe9050"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
-                element.style.background = "red"
+                element.style.background = "#7f2727ff"
             }
         })
     })
@@ -434,13 +434,13 @@ function _SOLUTION_SAUCES_(q) {
         element.addEventListener("click", () => {
             if (sauce[0].toLowerCase() == q.toLowerCase()) {
                 selected.textContent = sauce[1]
-                element.style.background = "green"
+                element.style.background = "#6cfe9050"
                 setTimeout(() => NEW_QUERY(), 400)
                 score++
                 selected.textContent = "score; " + score
             } else {
                 selected.textContent = sauce[1]
-                element.style.background = "red"
+                element.style.background = "#7f2727ff"
             }
         })
     })
@@ -520,57 +520,11 @@ function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
     _EXTRA_.addEventListener("click", () => {
         _SPF_EXTRA_ACTIVE_ = !_SPF_EXTRA_ACTIVE_
         if (_SPF_EXTRA_ACTIVE_) {
-            _EXTRA_.style.color = "#0f0"
+            _EXTRA_.style.color = "#6cfe90"
         } else {
             _EXTRA_.style.color = "#777"
         }
     })
-
-    // TOPPINGS_LIST.forEach(topping => {
-    //     let symbol = topping[0]
-
-    //     let element = document.createElement("div")
-    //     element.textContent = symbol
-    //     solution.appendChild(element)
-
-    //     element.addEventListener("click", () => {
-    //         if (element.id !== "checked") {
-    //             if (_SPF_EXTRA_ACTIVE_) {
-    //                 if (!symbol.startsWith("+")) {
-    //                     symbol = "+" + symbol
-    //                     _SPF_EXTRA_ACTIVE_ = false
-    //                     _EXTRA_.style.color = "#777"
-    //                 }
-    //             }
-    //             if (q_filtered.includes(symbol)) {
-    //                 element.id = "checked"
-    //                 selected.textContent = topping[1]
-    //                 element.style.background = "green"
-    //                 found++
-    //             } else {
-    //                 selected.textContent = "Incorrect: " + topping[1]
-    //                 element.style.background = "red"
-    //                 if (symbol.startsWith("+")) {
-    //                     symbol = symbol.slice(1)
-    //                 }
-    //             }
-    //         }
-
-    //         if (found == q_filtered.length) {
-    //             selected.textContent = "Correct! All ingredients found."
-    //             if (skip_base_query) {
-    //                 setTimeout(() => NEW_QUERY(4), 400)
-    //                 score++
-    //                 selected.textContent = "score; " + score
-    //             } else {
-    //                 setTimeout(() => QUERY_PIZZA_FEAST_BASE(pizzaName, q), 400)
-    //                 score++
-    //                 selected.textContent = "score; " + score
-    //             }
-    //         }
-    //     })
-    // })
-
 }
 
 let _SPF_FOUND_ = 0
@@ -593,11 +547,11 @@ function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TO
             if (q_filtered.includes(symbol)) {
                 element.id = "checked"
                 selected.textContent = topping[1]
-                element.style.background = "green"
+                element.style.background = "#6cfe9075"
                 _SPF_FOUND_++
             } else {
                 selected.textContent = "Incorrect: " + topping[1]
-                element.style.background = "red"
+                element.style.background = "#7f2727ff"
                 if (symbol.startsWith("+")) {
                     symbol = symbol.slice(1)
                 }
@@ -635,13 +589,13 @@ function _SOLUTION_PIZZA_FEAST_BASE_(q) {
         element.addEventListener("click", () => {
             if (cleanedFeast.includes(symbol)) {
                 selected.textContent = topping[1]
-                element.style.background = "green"
+                element.style.background = "#6cfe9050"
                 setTimeout(() => QUERY_PIZZA_FEAST(q), 400)
                 score++
                 selected.textContent = "score; " + score
             } else {
                 selected.textContent = topping[1]
-                element.style.background = "red"
+                element.style.background = "#7f2727ff"
             }
         })
     })
@@ -674,7 +628,7 @@ function QUERY_SAUCES() {
 function QUERY_PIZZA_FEAST() {
     let RdPizzaFeast = Math.floor(Math.random() * Object.keys(PIZZA_FEAST).length)
     let pizzaName = Object.keys(PIZZA_FEAST)[RdPizzaFeast]
-    query.textContent = `What are the ingredients used for the ${pizzaName} Pizza Feast`
+    query.innerHTML = `<p>What are the ingredients used for the <span style="color: #6cfe90; font-weight: 600;">${pizzaName}</span> Pizza</p>`
     _SOLUTION_PIZZA_FEAST_(pizzaName, PIZZA_FEAST[pizzaName])
 }
 function QUERY_PIZZA_FEAST_BASE(pizzaName, q) {
