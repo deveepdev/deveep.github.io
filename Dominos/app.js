@@ -474,43 +474,49 @@ function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
     _WRAPPER_.appendChild(_TABS_)
     _WRAPPER_.className = "spf-wrapper"
 
+
+
+                        
+        let _SPF_TOPPINGS_WRAPPER_ = document.createElement("WRAPPER")
+        _SPF_TOPPINGS_WRAPPER_.className = "spf-wrapper"
+
+
+        solution.appendChild(_WRAPPER_)
+        solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
+
+        TOPPINGS_LIST_MEATS.forEach(topping => {
+            _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "meat-symbol")
+        })
+        TOPPINGS_LIST_VEGETABLES.forEach(topping => {
+            _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "veggie-symbol")
+        })
+        TOPPINGS_LIST_CHEESES.forEach(topping => {
+            _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, "cheese-symbol")
+        })
+
+
+
     let TAB = 2
     _TABS_.addEventListener("click", () => {
-        console.log(TAB);
-        
         TAB++
         if (TAB > 2) {
             TAB = 0
         }
         _TABS_.textContent = ["MEATS", "VEGGIES", "CHEESES"][TAB]
-                    
-        let _SPF_TOPPINGS_WRAPPER_ = document.createElement("WRAPPER")
-        _SPF_TOPPINGS_WRAPPER_.className = "spf-wrapper"
+
+
         switch (TAB) {
             case 0:
-                solution.innerHTML = ""
-                solution.appendChild(_WRAPPER_)
-                solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
-                TOPPINGS_LIST_MEATS.forEach(topping => {
-                    _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_)
-                })
+                document.querySelectorAll(".meat-symbol").forEach(el => el.style.display = "block")
+                document.querySelectorAll(".veggie-symbol, .cheese-symbol").forEach(el => el.style.display = "none")
                 break;
             case 1:
-                solution.innerHTML = ""
-                solution.appendChild(_WRAPPER_)
-                solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
-                TOPPINGS_LIST_VEGETABLES.forEach(topping => {
-                    _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_)
-                })
+                document.querySelectorAll(".veggie-symbol").forEach(el => el.style.display = "block")
+                document.querySelectorAll(".meat-symbol, .cheese-symbol").forEach(el => el.style.display = "none")
                 break;
             case 2:
-                solution.innerHTML = ""
-                solution.appendChild(_WRAPPER_)
-                solution.appendChild(_SPF_TOPPINGS_WRAPPER_)
-                    
-                TOPPINGS_LIST_CHEESES.forEach(topping => {
-                    _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_)
-                })
+                document.querySelectorAll(".cheese-symbol").forEach(el => el.style.display = "block")
+                document.querySelectorAll(".veggie-symbol, .meat-symbol").forEach(el => el.style.display = "none")
                 break;
         }
     })
@@ -528,10 +534,11 @@ function _SOLUTION_PIZZA_FEAST_(pizzaName, q) {
 }
 
 let _SPF_FOUND_ = 0
-function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_) {
+function _SPF_(topping, q_filtered, _EXTRA_, pizzaName, skip_base_query, _SPF_TOPPINGS_WRAPPER_, classname) {
     let symbol = topping[0]
 
     let element = document.createElement("div")
+    element.className = classname || ""
     element.textContent = symbol
     _SPF_TOPPINGS_WRAPPER_.appendChild(element)
 
