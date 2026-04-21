@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aquila</title>
+
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #1a1d24;
+      --accent: #4f8cff;
+      --text: #e6e9ef;
+      --subtext: #9aa3b2;
+      --border: #2a2f3a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo img {
+      width: 48px;
+      height: 48px;
+    }
+
+    .logo h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .title {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--subtext);
+      margin-bottom: 2.5rem;
+    }
+
+    .apps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--subtext);
+    }
+
+    .card::after {
+      content: "→";
+      position: absolute;
+      right: 20px;
+      bottom: 15px;
+      font-size: 1.2rem;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    footer {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--subtext);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="./src/aquila.png" alt="Aquila Logo" />
+      <h1>Aquila</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="title">Your Apps, One Place</div>
+      <div class="subtitle">Launch and manage your tools from a unified hub.</div>
+
+      <div class="apps">
+
+        <div class="card" onclick="location.href='./ordo/index.html'">
+          <h2>Ordo</h2>
+          <p>Task and list management system.</p>
+        </div>
+
+        <div class="card" onclick="location.href='./DoProof/app/index.html'">
+          <h2>DoProof</h2>
+          <p>Proof-based workflow and validation tool.</p>
+        </div>
+
+        <!-- Future expansion -->
+        <!--
+        <div class="card">
+          <h2>Coming Soon</h2>
+          <p>More tools will appear here.</p>
+        </div>
+        -->
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 Aquila — All rights reserved
+  </footer>
+
+</body>
+</html>
