@@ -1,0 +1,20 @@
+{
+  "name": "DoProof",
+  "short_name": "DoProof",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#202631",
+  "theme_color": "#202631",
+  "icons": [
+    {
+      "src": "./src/DoProof_logo logo - transparent.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./src/DoProof_logo logo - transparent.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
