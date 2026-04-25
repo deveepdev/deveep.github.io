@@ -266,134 +266,139 @@ document.querySelectorAll('.card').forEach(card => {
 
 
 // ===== GLYPH RAIN =====
-const canvas = document.getElementById('glyphs');
-const ctx = canvas.getContext('2d');
 
-function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
+// do glyphs when DOM is loaded
 
-const glyphs = "ᚠᚢᚦᚨᚱᚲᛃᛇᛉᛋᛏᛒᛖᛗᛚᛝ✧✦✶✹✺⟁⌬⌖⟡⟢⟣";
+addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('glyphs');
+  const ctx = canvas.getContext('2d');
 
-const cellSize = 18;
-let columns;
-
-const streams = [];
-const MAX_STREAMS = 40; // hard cap for performance
-
-function setupGrid() {
-  columns = Math.floor(canvas.width / cellSize);
-}
-setupGrid();
-window.addEventListener('resize', setupGrid);
-
-class Stream {
-  constructor(col) {
-    this.col = col;
-    this.row = -Math.floor(Math.random() * 10);
-
-    this.length = 5 + (Math.random() * 10 | 0);
-
-    this.stepInterval = 90 + Math.random() * 120;
-    this.accumulator = 0;
-
-    // reuse array (no reallocation later)
-    this.chars = new Array(this.length);
-    for (let i = 0; i < this.length; i++) {
-      this.chars[i] = glyphs[(Math.random() * glyphs.length) | 0];
-    }
-
-    // 🎨 70 / 20 / 10 distribution
-    const r = Math.random();
-    if (r < 0.7) this.mode = 0;      // grey
-    else if (r < 0.9) this.mode = 1; // tip gold
-    else this.mode = 2;              // full gold
+  function resize() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
   }
+  resize();
+  window.addEventListener('resize', resize);
 
-  update(delta) {
-    this.accumulator += delta;
+  const glyphs = "ᚠᚢᚦᚨᚱᚲᛃᛇᛉᛋᛏᛒᛖᛗᛚᛝ✧✦✶✹✺⟁⌬⌖⟡⟢⟣";
 
-    if (this.accumulator >= this.stepInterval) {
+  const cellSize = 18;
+  let columns;
+
+  const streams = [];
+  const MAX_STREAMS = 40; // hard cap for performance
+
+  function setupGrid() {
+    columns = Math.floor(canvas.width / cellSize);
+  }
+  setupGrid();
+  window.addEventListener('resize', setupGrid);
+
+  class Stream {
+    constructor(col) {
+      this.col = col;
+      this.row = -Math.floor(Math.random() * 10);
+
+      this.length = 5 + (Math.random() * 10 | 0);
+
+      this.stepInterval = 90 + Math.random() * 120;
       this.accumulator = 0;
-      this.row++;
 
-      // shift manually (faster than pop/unshift combo)
-      for (let i = this.length - 1; i > 0; i--) {
-        this.chars[i] = this.chars[i - 1];
-      }
-      this.chars[0] = glyphs[(Math.random() * glyphs.length) | 0];
-    }
-  }
-
-  draw() {
-    const baseX = this.col * cellSize;
-
-    for (let i = 0; i < this.length; i++) {
-      const y = (this.row - i) * cellSize;
-      if (y < 0 || y > canvas.height) continue;
-
-      const alpha = 1 - i / this.length;
-
-      let style;
-
-      if (this.mode === 2) {
-        // full gold
-        style = `rgba(255,210,90,${alpha})`;
-      } else if (this.mode === 0) {
-        // full grey
-        style = `rgba(160,160,160,${alpha * 0.4})`;
-      } else {
-        // tip gold
-        style = i === 0
-          ? `rgba(255,210,90,${alpha})`
-          : `rgba(160,160,160,${alpha * 0.4})`;
+      // reuse array (no reallocation later)
+      this.chars = new Array(this.length);
+      for (let i = 0; i < this.length; i++) {
+        this.chars[i] = glyphs[(Math.random() * glyphs.length) | 0];
       }
 
-      ctx.fillStyle = style;
-      ctx.fillText(this.chars[i], baseX, y);
+      // 🎨 70 / 20 / 10 distribution
+      const r = Math.random();
+      if (r < 0.7) this.mode = 0;      // grey
+      else if (r < 0.9) this.mode = 1; // tip gold
+      else this.mode = 2;              // full gold
+    }
+
+    update(delta) {
+      this.accumulator += delta;
+
+      if (this.accumulator >= this.stepInterval) {
+        this.accumulator = 0;
+        this.row++;
+
+        // shift manually (faster than pop/unshift combo)
+        for (let i = this.length - 1; i > 0; i--) {
+          this.chars[i] = this.chars[i - 1];
+        }
+        this.chars[0] = glyphs[(Math.random() * glyphs.length) | 0];
+      }
+    }
+
+    draw() {
+      const baseX = this.col * cellSize;
+
+      for (let i = 0; i < this.length; i++) {
+        const y = (this.row - i) * cellSize;
+        if (y < 0 || y > canvas.height) continue;
+
+        const alpha = 1 - i / this.length;
+
+        let style;
+
+        if (this.mode === 2) {
+          // full gold
+          style = `rgba(255,210,90,${alpha})`;
+        } else if (this.mode === 0) {
+          // full grey
+          style = `rgba(160,160,160,${alpha * 0.4})`;
+        } else {
+          // tip gold
+          style = i === 0
+            ? `rgba(255,210,90,${alpha})`
+            : `rgba(160,160,160,${alpha * 0.4})`;
+        }
+
+        ctx.fillStyle = style;
+        ctx.fillText(this.chars[i], baseX, y);
+      }
+    }
+
+    isDead() {
+      return this.row * cellSize > canvas.height + this.length * cellSize;
     }
   }
 
-  isDead() {
-    return this.row * cellSize > canvas.height + this.length * cellSize;
-  }
-}
+  let lastTime = performance.now();
 
-let lastTime = performance.now();
+  function draw(now) {
+    const delta = now - lastTime;
+    lastTime = now;
 
-function draw(now) {
-  const delta = now - lastTime;
-  lastTime = now;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // set font ONCE per frame (big win)
+    ctx.font = `${cellSize - 2}px monospace`;
 
-  // set font ONCE per frame (big win)
-  ctx.font = `${cellSize - 2}px monospace`;
-
-  // controlled spawning + cap
-  if (streams.length < MAX_STREAMS && Math.random() < 0.03) {
-    streams.push(new Stream((Math.random() * columns) | 0));
-  }
-
-  // fast removal (swap-pop)
-  for (let i = streams.length - 1; i >= 0; i--) {
-    const s = streams[i];
-    s.update(delta);
-    s.draw();
-
-    if (s.isDead()) {
-      streams[i] = streams[streams.length - 1];
-      streams.pop();
+    // controlled spawning + cap
+    if (streams.length < MAX_STREAMS && Math.random() < 0.03) {
+      streams.push(new Stream((Math.random() * columns) | 0));
     }
+
+    // fast removal (swap-pop)
+    for (let i = streams.length - 1; i >= 0; i--) {
+      const s = streams[i];
+      s.update(delta);
+      s.draw();
+
+      if (s.isDead()) {
+        streams[i] = streams[streams.length - 1];
+        streams.pop();
+      }
+    }
+
+    requestAnimationFrame(draw);
   }
 
-  requestAnimationFrame(draw);
-}
-
-draw(performance.now());
+  draw(performance.now());
+});
 </script>
 
 </body>
