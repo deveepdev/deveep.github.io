@@ -205,14 +205,37 @@ function calculate(){
 
     /* TRANSPORTATION */
 
-    subtotal += PRICING.fees.transportation;
+    let transportationFee =
+PRICING.fees.transportation;
 
-    breakdown += `
-        <div class="breakdown-item">
-            <span>Transportation</span>
-            <span>$${PRICING.fees.transportation.toFixed(0)}</span>
-        </div>
-    `;
+/* EXTRA LADDER / HEIGHT TRANSPORT */
+
+if(
+    $("windows-toggle").checked &&
+    state.windowHouse === "multi"
+){
+    transportationFee += 15;
+}
+
+subtotal += transportationFee;
+
+breakdown += `
+    <div class="breakdown-item">
+        <span>
+            Transportation
+            ${
+                transportationFee >
+                PRICING.fees.transportation
+                ? "(Multi-Story Access)"
+                : ""
+            }
+        </span>
+
+        <span>
+            $${transportationFee.toFixed(0)}
+        </span>
+    </div>
+`;
 
     /* TAXES */
 
