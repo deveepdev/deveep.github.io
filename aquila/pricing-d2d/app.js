@@ -8,17 +8,25 @@ const PRICING = {
 
     gutters:{
         bungalowBase:65,
-        multiStoryBase:125,
-        complexityMultiplier:8,
+        multiStoryBase:95,
+        complexityMultiplier:11,
 
         sizeMultipliers:{
             1:1,
-            2:1.35,
-            3:1.90,
-            4:2.65
+            2:1.25,
+            3:1.75,
+            4:2.25
         }
+    },
+
+    fees:{
+        transportation:35,
+        GST:5,
+        QST:9.975
     }
 };
+
+let paymentType = "cash";
 
 const state = {
     windowHouse:"bungalow",
@@ -129,7 +137,7 @@ document.querySelectorAll("input")
 
 function calculate(){
 
-    let total = 0;
+    let subtotal = 0;
     let services = 0;
     let breakdown = "";
 
@@ -153,7 +161,7 @@ function calculate(){
         if(state.inside)
             price += count * pricing.inside;
 
-        total += price;
+        subtotal += price;
 
         breakdown += `
             <div class="breakdown-item">
@@ -185,7 +193,7 @@ function calculate(){
             PRICING.gutters
             .sizeMultipliers[state.gutterSize];
 
-        total += price;
+        subtotal += price;
 
         breakdown += `
             <div class="breakdown-item">
@@ -195,13 +203,78 @@ function calculate(){
         `;
     }
 
+    /* TRANSPORTATION */
+
+    subtotal += PRICING.fees.transportation;
+
+    breakdown += `
+        <div class="breakdown-item">
+            <span>Transportation</span>
+            <span>$${PRICING.fees.transportation.toFixed(0)}</span>
+        </div>
+    `;
+
+    /* TAXES */
+
+    const gst =
+    subtotal * (PRICING.fees.GST / 100);
+
+    const qst =
+    subtotal * (PRICING.fees.QST / 100);
+
+    const taxes =
+    gst + qst;
+
+    const taxesWaived =
+    paymentType === "cash";
+
+    const total =
+    taxesWaived
+    ? subtotal
+    : subtotal + taxes;
+
+    /* TAX DISPLAY */
+
+    $("tax-summary").innerHTML = `
+
+        <div class="breakdown-item">
+
+            <span>
+                GST / TPS (${PRICING.fees.GST}%)
+            </span>
+
+            <span class="${
+                taxesWaived ? "tax-waived" : ""
+            }">
+                $${gst.toFixed(2)}
+            </span>
+
+        </div>
+
+        <div class="breakdown-item">
+
+            <span>
+                QST / TVQ (${PRICING.fees.QST}%)
+            </span>
+
+            <span class="${
+                taxesWaived ? "tax-waived" : ""
+            }">
+                $${qst.toFixed(2)}
+            </span>
+
+        </div>
+
+    `;
+
     $("total-price").textContent =
-        `$${total.toFixed(0)}`;
+        `$${total.toFixed(2)}`;
 
     $("service-count").textContent =
         `${services} Service${services !== 1 ? "s" : ""}`;
 
-    $("breakdown").innerHTML = breakdown;
+    $("breakdown").innerHTML =
+        breakdown;
 
 }
 
@@ -239,6 +312,14 @@ setupOptions(".status-option", value => {
         value === "schedule"
         ? "block"
         : "none";
+
+});
+
+setupOptions(".payment-option", value => {
+
+    paymentType = value;
+
+    calculate();
 
 });
 

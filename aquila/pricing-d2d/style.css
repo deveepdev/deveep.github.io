@@ -395,3 +395,24 @@ textarea{
 .copy-btn{
     margin-top:10px;
 }
+
+/* =========================
+   TAX SUMMARY
+========================= */
+
+.tax-waived{
+    text-decoration:line-through;
+    opacity:.5;
+}
+
+/* =========================
+   SMALL OPTION TEXT
+========================= */
+
+.option small{
+    display:block;
+    margin-top:4px;
+
+    font-size:.72rem;
+    opacity:.8;
+}

@@ -24,11 +24,9 @@
             <span id="service-count">0 Services</span>
         </div>
 
-        <div class="total-price" id="total-price">
-            $0
-        </div>
-
+        <div class="total-price" id="total-price">$0</div>
         <div class="breakdown" id="breakdown"></div>
+        <div class="tax-summary" id="tax-summary"></div>
 
     </div>
 
@@ -280,6 +278,36 @@
             >
 
         </div>
+
+        <div class="field">
+
+    <label>Payment Type</label>
+
+    <div class="option-group">
+
+        <div
+            class="option payment-option active"
+            data-value="card"
+        >
+            Card / E-Transfer
+            <small>
+                Taxes applied
+            </small>
+        </div>
+
+        <div
+            class="option payment-option"
+            data-value="cash"
+        >
+            Cash
+            <small>
+                Taxes waived
+            </small>
+        </div>
+
+    </div>
+
+</div>
 
         <div class="field">
 
