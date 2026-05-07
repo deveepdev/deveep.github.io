@@ -34,8 +34,8 @@ const state = {
     gutterSize:1,
     outside:true,
     inside:false,
-    windowsEnabled = false,
-    guttersEnabled = false
+    windowsEnabled: false,
+    guttersEnabled: false
 };
 
 state.windowsEnabled = false;
