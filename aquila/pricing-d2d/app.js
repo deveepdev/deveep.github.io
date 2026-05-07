@@ -33,8 +33,13 @@ const state = {
     gutterHouse:"bungalow",
     gutterSize:1,
     outside:true,
-    inside:false
+    inside:false,
+    windowsEnabled = false,
+    guttersEnabled = false
 };
+
+state.windowsEnabled = false;
+state.guttersEnabled = false;
 
 /* =========================
    OPTION HELPERS
@@ -79,6 +84,30 @@ function setupToggle(id, key){
 }
 
 /* =========================
+   SERVICE TOGGLES
+========================= */
+
+$("windows-toggle")
+.addEventListener("change", e => {
+
+    state.windowsEnabled =
+    e.target.checked;
+
+    calculate();
+
+});
+
+$("gutters-toggle")
+.addEventListener("change", e => {
+
+    state.guttersEnabled =
+    e.target.checked;
+
+    calculate();
+
+});
+
+/* =========================
    WINDOW OPTIONS
 ========================= */
 
@@ -110,10 +139,10 @@ $("gutter-complexity")
 
     $("complexity-description").textContent =
         value <= 3
-        ? "Easy to stand on roof and simple design"
+        ? `Easy roof access • +$${value * 11}`
         : value <= 6
-        ? "Harder to stand on roof or more complex design"
-        : "Very hard to stand on roof or extremely complex design";
+        ? `Moderate roof difficulty • +$${value * 11}`
+        : `High difficulty roof • +$${value * 11}`;
 
     calculate();
 
@@ -141,9 +170,15 @@ function calculate(){
     let services = 0;
     let breakdown = "";
 
+    const windowsEnabled =
+    state.windowsEnabled
+
+    const guttersEnabled =
+    state.guttersEnabled;
+
     /* WINDOWS */
 
-    if($("windows-toggle").checked){
+    if(windowsEnabled){
 
         services++;
 
@@ -173,7 +208,7 @@ function calculate(){
 
     /* GUTTERS */
 
-    if($("gutters-toggle").checked){
+    if(guttersEnabled){
 
         services++;
 
@@ -205,14 +240,20 @@ function calculate(){
 
     /* TRANSPORTATION */
 
-    let transportationFee =
+let transportationFee =
 PRICING.fees.transportation;
 
-/* EXTRA LADDER / HEIGHT TRANSPORT */
-
 if(
-    $("windows-toggle").checked &&
-    state.windowHouse === "multi"
+
+    state.guttersEnabled
+
+    ||
+
+    (
+        state.windowsEnabled &&
+        state.windowHouse === "multi"
+    )
+
 ){
     transportationFee += 15;
 }
@@ -221,12 +262,12 @@ subtotal += transportationFee;
 
 breakdown += `
     <div class="breakdown-item">
+
         <span>
             Transportation
             ${
-                transportationFee >
-                PRICING.fees.transportation
-                ? "(Multi-Story Access)"
+                transportationFee > 35
+                ? "(Large Ladder Equipment)"
                 : ""
             }
         </span>
@@ -234,6 +275,7 @@ breakdown += `
         <span>
             $${transportationFee.toFixed(0)}
         </span>
+
     </div>
 `;
 
@@ -325,7 +367,9 @@ $("close-modal")
 
 });
 
-/* STATUS OPTIONS */
+/* =========================
+   STATUS OPTIONS
+========================= */
 
 setupOptions(".status-option", value => {
 
@@ -337,6 +381,10 @@ setupOptions(".status-option", value => {
         : "none";
 
 });
+
+/* =========================
+   PAYMENT OPTIONS
+========================= */
 
 setupOptions(".payment-option", value => {
 
@@ -368,11 +416,9 @@ $("generate-job")
     const date =
     $("schedule-date").value || "Not Set";
 
-    /* BUILD JOB DESCRIPTION */
-
     let jobDescription = "";
 
-    if($("windows-toggle").checked){
+    if(state.windowsEnabled){
 
         const count =
         $("window-count").value;
@@ -383,10 +429,11 @@ $("generate-job")
 - ${state.windowHouse}
 - ${state.outside ? "Outside " : ""}
 ${state.inside ? "/ Inside" : ""}
+
 `;
     }
 
-    if($("gutters-toggle").checked){
+    if(state.guttersEnabled){
 
         const complexity =
         $("gutter-complexity").value;
@@ -403,18 +450,38 @@ ${state.inside ? "/ Inside" : ""}
 - ${state.gutterHouse}
 - Complexity ${complexity}/10
 - ${sizeLabels[state.gutterSize]} house
+
 `;
     }
 
-    const total =
-    $("total-price").textContent;
+    const subtotal =
+    parseFloat(
+        $("total-price")
+        .textContent
+        .replace("$","")
+    );
+
+    const taxesWaived =
+    paymentType === "cash";
+
+    const paymentLabel =
+    taxesWaived
+    ? "Cash (Taxes Waived)"
+    : "Card / E-Transfer";
+
+    const gst =
+    subtotal * (PRICING.fees.GST / 100);
+
+    const qst =
+    subtotal * (PRICING.fees.QST / 100);
 
     const output =
 `
  -=- Customer's info -=-
-  Name: ${name}
-  Phone: ${number}
-  Address: ${address}
+
+Name: ${name}
+Phone: ${number}
+Address: ${address}
 
 Status: ${selectedStatus}${
 selectedStatus === "schedule"
@@ -422,14 +489,34 @@ selectedStatus === "schedule"
 : ""
 }
 
-  -=- JOB DESCRIPTION -=-
+ -=- JOB DESCRIPTION -=-
+
 ${jobDescription}
 
-   -===-
-  TOTAL: ${total}
-   -===-
+ -=- PAYMENT INFO -=-
 
-  -=- NOTES -=-
+Payment Type: ${paymentLabel}
+
+GST / TPS:
+${
+taxesWaived
+? `~~$${gst.toFixed(2)}~~`
+: `$${gst.toFixed(2)}`
+}
+
+QST / TVQ:
+${
+taxesWaived
+? `~~$${qst.toFixed(2)}~~`
+: `$${qst.toFixed(2)}`
+}
+
+ -=- TOTAL -=-
+
+${$("total-price").textContent}
+
+ -=- NOTES -=-
+
 ${notes}
 `;
 
@@ -457,7 +544,8 @@ $("copy-job")
 
     setTimeout(() => {
 
-        btn.textContent = "Copy Job Text";
+        btn.textContent =
+        "Copy Job Text";
 
     }, 1800);
 
