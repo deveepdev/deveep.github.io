@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 
     <title>Professional Cleaning Estimator</title>
 
@@ -13,9 +13,23 @@
 <div class="app">
 
     <div class="topbar">
-        <h1>Job estimate</h1>
-        <p>Professional pricing tool</p>
+        <div>
+            <h1>Job estimate</h1>
+            <p>Professional pricing tool</p>
+        </div>
+
+        <div class="app-nav">
+            <button type="button" class="nav-button active" id="show-quote-view">
+                Quote
+            </button>
+
+            <button type="button" class="nav-button" id="show-records-view">
+                Customers
+            </button>
+        </div>
     </div>
+
+    <main class="view active-view" id="quote-view">
 
     <div class="total-card">
 
@@ -199,6 +213,50 @@
         Confirm Quote
     </button>
 
+    </main>
+
+    <main class="view" id="records-view">
+
+        <div class="records-header">
+            <div>
+                <h2>Customer Records</h2>
+                <p id="records-count">0 saved customers</p>
+            </div>
+
+            <button type="button" id="back-to-quote">
+                New Quote
+            </button>
+        </div>
+
+        <div class="records-layout">
+
+            <section class="records-list-panel">
+                <div class="records-search-row">
+                    <input
+                        type="search"
+                        id="records-search"
+                        placeholder="Search customers, notes, jobs"
+                        autocomplete="off"
+                    >
+
+                    <button type="button" class="icon-button add-profile-button" id="add-customer-profile" aria-label="Add customer profile" title="Add customer profile">
+                        +
+                    </button>
+                </div>
+
+                <div class="records-list" id="records-list"></div>
+            </section>
+
+            <section class="record-detail" id="record-detail">
+                <div class="empty-record">
+                    Select a customer to see notes, jobs, quotes, payment info, and history.
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
 </div>
 
 <div class="mobile-action-bar">
@@ -222,10 +280,20 @@
 
             <h2>Confirm Quote</h2>
 
-            <button id="close-modal">
-                ×
+            <button id="close-modal" type="button" aria-label="Close quote">
+                &times;
             </button>
 
+        </div>
+
+        <div class="customer-actions">
+            <button type="button" id="open-saved-customers">
+                Customer Records
+            </button>
+
+            <button type="button" id="save-customer">
+                Save Profile
+            </button>
         </div>
 
         <div class="grid">
