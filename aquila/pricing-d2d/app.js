@@ -27,6 +27,14 @@ const PRICING = {
 };
 
 let paymentType = "cash";
+let quoteTotals = {
+    subtotal: 0,
+    gst: 0,
+    qst: 0,
+    taxes: 0,
+    total: 0,
+    taxesWaived: true
+};
 
 const state = {
     windowHouse:"bungalow",
@@ -80,6 +88,32 @@ function setupToggle(id, key){
         calculate();
 
     });
+
+}
+
+function setButtonText(id, text, resetText, delay = 1800){
+
+    const btn = $(id);
+    btn.textContent = text;
+
+    if(resetText){
+        setTimeout(() => {
+            btn.textContent = resetText;
+        }, delay);
+    }
+
+}
+
+function copyToClipboard(text){
+
+    if(!navigator.clipboard || !text){
+        return Promise.resolve(false);
+    }
+
+    return navigator.clipboard
+        .writeText(text)
+        .then(() => true)
+        .catch(() => false);
 
 }
 
@@ -298,6 +332,15 @@ breakdown += `
     ? subtotal
     : subtotal + taxes;
 
+    quoteTotals = {
+        subtotal,
+        gst,
+        qst,
+        taxes,
+        total,
+        taxesWaived
+    };
+
     /* TAX DISPLAY */
 
     $("tax-summary").innerHTML = `
@@ -335,6 +378,9 @@ breakdown += `
     $("total-price").textContent =
         `$${total.toFixed(2)}`;
 
+    $("mobile-total").textContent =
+        `$${total.toFixed(2)}`;
+
     $("service-count").textContent =
         `${services} Service${services !== 1 ? "s" : ""}`;
 
@@ -353,17 +399,58 @@ let selectedStatus = "schedule";
 
 const modal = $("quote-modal");
 
-$("confirm-quote")
-.addEventListener("click", () => {
+function openQuoteModal(){
 
     modal.classList.remove("hidden");
+    $("customer-name").focus();
+
+}
+
+function closeQuoteModal(){
+
+    modal.classList.add("hidden");
+
+}
+
+$("confirm-quote")
+.addEventListener("click", openQuoteModal);
+
+$("mobile-confirm-quote")
+.addEventListener("click", openQuoteModal);
+
+$("close-modal")
+.addEventListener("click", closeQuoteModal);
+
+modal.addEventListener("click", e => {
+
+    if(e.target === modal){
+        closeQuoteModal();
+    }
 
 });
 
-$("close-modal")
-.addEventListener("click", () => {
+document.addEventListener("keydown", e => {
 
-    modal.classList.add("hidden");
+    if(e.key === "Escape"){
+        closeQuoteModal();
+    }
+
+});
+
+document.querySelectorAll(".quick-stepper button")
+.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        const input = $(button.dataset.target);
+        const step = Number(button.dataset.step);
+        const min = Number(input.min || 0);
+        const current = Number(input.value || 0);
+
+        input.value = Math.max(min, current + step);
+        input.dispatchEvent(new Event("input", { bubbles:true }));
+
+    });
 
 });
 
@@ -399,7 +486,7 @@ setupOptions(".payment-option", value => {
 ========================= */
 
 $("generate-job")
-.addEventListener("click", () => {
+.addEventListener("click", async () => {
 
     const name =
     $("customer-name").value || "N/A";
@@ -454,26 +541,13 @@ ${state.inside ? "/ Inside" : ""}
 `;
     }
 
-    const subtotal =
-    parseFloat(
-        $("total-price")
-        .textContent
-        .replace("$","")
-    );
-
     const taxesWaived =
-    paymentType === "cash";
+    quoteTotals.taxesWaived;
 
     const paymentLabel =
     taxesWaived
     ? "Cash (Taxes Waived)"
     : "Card / E-Transfer";
-
-    const gst =
-    subtotal * (PRICING.fees.GST / 100);
-
-    const qst =
-    subtotal * (PRICING.fees.QST / 100);
 
     const output =
 `
@@ -500,15 +574,15 @@ Payment Type: ${paymentLabel}
 GST / TPS:
 ${
 taxesWaived
-? `~~$${gst.toFixed(2)}~~`
-: `$${gst.toFixed(2)}`
+? `~~$${quoteTotals.gst.toFixed(2)}~~`
+: `$${quoteTotals.gst.toFixed(2)}`
 }
 
 QST / TVQ:
 ${
 taxesWaived
-? `~~$${qst.toFixed(2)}~~`
-: `$${qst.toFixed(2)}`
+? `~~$${quoteTotals.qst.toFixed(2)}~~`
+: `$${quoteTotals.qst.toFixed(2)}`
 }
 
  -=- TOTAL -=-
@@ -521,6 +595,14 @@ ${notes}
 `;
 
     $("job-output").value = output;
+
+    const copied = await copyToClipboard(output);
+
+    setButtonText(
+        "generate-job",
+        copied ? "Generated + Copied" : "Generated",
+        "Generate Job Text"
+    );
 
 });
 
@@ -536,17 +618,12 @@ $("copy-job")
 
     if(!text) return;
 
-    await navigator.clipboard.writeText(text);
+    const copied = await copyToClipboard(text);
 
-    const btn = $("copy-job");
-
-    btn.textContent = "Copied!";
-
-    setTimeout(() => {
-
-        btn.textContent =
-        "Copy Job Text";
-
-    }, 1800);
+    setButtonText(
+        "copy-job",
+        copied ? "Copied!" : "Copy unavailable",
+        "Copy Job Text"
+    );
 
 });

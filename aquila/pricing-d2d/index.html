@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 
     <title>Professional Cleaning Estimator</title>
 
@@ -58,7 +58,15 @@
                     id="window-count"
                     value="20"
                     min="0"
+                    inputmode="numeric"
                 >
+
+                <div class="quick-stepper" aria-label="Window count quick controls">
+                    <button type="button" data-step="-5" data-target="window-count">-5</button>
+                    <button type="button" data-step="-1" data-target="window-count">-1</button>
+                    <button type="button" data-step="1" data-target="window-count">+1</button>
+                    <button type="button" data-step="5" data-target="window-count">+5</button>
+                </div>
             </div>
 
             <div class="field">
@@ -193,6 +201,16 @@
 
 </div>
 
+<div class="mobile-action-bar">
+    <div>
+        <span>Estimate</span>
+        <strong id="mobile-total">$0</strong>
+    </div>
+    <button id="mobile-confirm-quote" type="button">
+        Finish
+    </button>
+</div>
+
 
 <!-- QUOTE MODAL -->
 
@@ -219,6 +237,7 @@
                     type="text"
                     id="customer-name"
                     placeholder="John Smith"
+                    autocomplete="name"
                 >
             </div>
 
@@ -226,9 +245,11 @@
                 <label>Phone Number</label>
 
                 <input
-                    type="text"
+                    type="tel"
                     id="customer-number"
                     placeholder="514-555-5555"
+                    autocomplete="tel"
+                    inputmode="tel"
                 >
             </div>
 
@@ -242,6 +263,7 @@
                 type="text"
                 id="customer-address"
                 placeholder="123 Main Street"
+                autocomplete="street-address"
             >
 
         </div>
@@ -286,7 +308,7 @@
     <div class="option-group">
 
         <div
-            class="option payment-option active"
+            class="option payment-option"
             data-value="card"
         >
             Card / E-Transfer
@@ -296,7 +318,7 @@
         </div>
 
         <div
-            class="option payment-option"
+            class="option payment-option active"
             data-value="cash"
         >
             Cash
