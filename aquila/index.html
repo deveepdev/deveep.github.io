@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aquila</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --card: rgba(26, 29, 36, 0.6);
+      --accent: #ffd25a;
+      --accent-soft: #ffe08a;
+      --text: #e6e9ef;
+      --subtext: #9aa3b2;
+      --border: rgba(255, 210, 90, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255, 210, 90, 0.12), transparent 40%),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* CANVAS LAYER */
+    canvas#glyphs {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ===== HERO ===== */
+
+    header.hero {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 3.5rem 1rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-title {
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 500;
+      letter-spacing: 10px;
+      margin-bottom: -70px;
+
+      background: linear-gradient(
+        135deg,
+        #fff8d6,
+        #ffe08a,
+        #ffd25a,
+        #fff2b0
+      );
+
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      text-shadow:
+        0 0 6px rgba(255, 220, 120, 0.2),
+        0 0 12px rgba(255, 200, 100, 0.1);
+    }
+
+    .hero-logo {
+      width: 250px;
+      height: 250px;
+      opacity: 0.95;
+      filter: drop-shadow(0 12px 35px rgba(255, 215, 120, 0.25));
+    }
+
+    /* ===== MAIN ===== */
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 2rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .apps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      perspective: 1400px;
+    }
+
+    /* ===== CARDS ===== */
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: left;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(120deg, transparent, rgba(255,210,90,0.5), transparent);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card:hover {
+      background: radial-gradient(
+        circle at var(--x, 50%) var(--y, 50%),
+        rgba(255, 210, 90, 0.15),
+        transparent 40%
+      ),
+      var(--card);
+    }
+
+    .card h2 {
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--subtext);
+    }
+
+    .card span.arrow {
+      position: absolute;
+      right: 20px;
+      bottom: 18px;
+      font-size: 1.2rem;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    /* BACKDROP IMAGE */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url('./src/aquila-shadow-outline-headless.png') no-repeat center;
+      background-size: auto;
+      opacity: 0.235;
+      filter: blur(2px) brightness(1.2);
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<canvas id="glyphs"></canvas>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">AQUILA</h1>
+    <img src="./src/aquila.png" alt="Aquila Logo" class="hero-logo" />
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <div class="apps">
+
+      <div class="card" onclick="location.href='./civic/index.html'">
+        <h2>Civic Showcase</h2>
+        <p>2021 Honda Civic Sport-Touring showcase.</p>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="card" onclick="location.href='./ordo/index.html'">
+        <h2>Ordo</h2>
+        <p>Task and list management system.</p>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="card" onclick="location.href='./DoProof/app/index.html'">
+        <h2>DoProof</h2>
+        <p>Dough proofing app.</p>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="card" onclick="location.href='./pricing-d2d/index.html'">
+        <h2>Job Estimates</h2>
+        <p>Professional job estimates, focused on window and gutter cleaning</p>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="card" onclick="location.href='./CRM/business-crm/index.html'">
+        <h2>Customer relations</h2>
+        <p>Index of customer relations, and overall job analytics</p>
+        <span class="arrow">→</span>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+// CARD EFFECT
+document.querySelectorAll('.card').forEach(card => {
+  let bounds;
+
+  card.addEventListener('mouseenter', () => {
+    bounds = card.getBoundingClientRect();
+  });
+
+  card.addEventListener('mousemove', e => {
+    const x = e.clientX - bounds.left;
+    const y = e.clientY - bounds.top;
+
+    const percentX = (x - bounds.width / 2) / (bounds.width / 2);
+    const percentY = (y - bounds.height / 2) / (bounds.height / 2);
+
+    card.style.transform = `
+      translateY(-6px)
+      rotateX(${percentY * -6}deg)
+      rotateY(${percentX * 6}deg)
+      scale(1.02)
+    `;
+
+    card.style.setProperty('--x', `${x}px`);
+    card.style.setProperty('--y', `${y}px`);
+  });
+
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = `translateY(0) rotateX(0) rotateY(0) scale(1)`;
+  });
+});
+
+
+// ===== GLYPH RAIN =====
+
+// do glyphs when DOM is loaded
+
+addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('glyphs');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const glyphs = "ᚠᚢᚦᚨᚱᚲᛃᛇᛉᛋᛏᛒᛖᛗᛚᛝ✧✦✶✹✺⟁⌬⌖⟡⟢⟣";
+
+  const cellSize = 18;
+  let columns;
+
+  const streams = [];
+  const MAX_STREAMS = 40; // hard cap for performance
+
+  function setupGrid() {
+    columns = Math.floor(canvas.width / cellSize);
+  }
+  setupGrid();
+  window.addEventListener('resize', setupGrid);
+
+  class Stream {
+    constructor(col) {
+      this.col = col;
+      this.row = -Math.floor(Math.random() * 10);
+
+      this.length = 5 + (Math.random() * 10 | 0);
+
+      this.stepInterval = 90 + Math.random() * 120;
+      this.accumulator = 0;
+
+      // reuse array (no reallocation later)
+      this.chars = new Array(this.length);
+      for (let i = 0; i < this.length; i++) {
+        this.chars[i] = glyphs[(Math.random() * glyphs.length) | 0];
+      }
+
+      // 🎨 70 / 20 / 10 distribution
+      const r = Math.random();
+      if (r < 0.7) this.mode = 0;      // grey
+      else if (r < 0.9) this.mode = 1; // tip gold
+      else this.mode = 2;              // full gold
+    }
+
+    update(delta) {
+      this.accumulator += delta;
+
+      if (this.accumulator >= this.stepInterval) {
+        this.accumulator = 0;
+        this.row++;
+
+        // shift manually (faster than pop/unshift combo)
+        for (let i = this.length - 1; i > 0; i--) {
+          this.chars[i] = this.chars[i - 1];
+        }
+        this.chars[0] = glyphs[(Math.random() * glyphs.length) | 0];
+      }
+    }
+
+    draw() {
+      const baseX = this.col * cellSize;
+
+      for (let i = 0; i < this.length; i++) {
+        const y = (this.row - i) * cellSize;
+        if (y < 0 || y > canvas.height) continue;
+
+        const alpha = 1 - i / this.length;
+
+        let style;
+
+        if (this.mode === 2) {
+          // full gold
+          style = `rgba(255,210,90,${alpha})`;
+        } else if (this.mode === 0) {
+          // full grey
+          style = `rgba(160,160,160,${alpha * 0.4})`;
+        } else {
+          // tip gold
+          style = i === 0
+            ? `rgba(255,210,90,${alpha})`
+            : `rgba(160,160,160,${alpha * 0.4})`;
+        }
+
+        ctx.fillStyle = style;
+        ctx.fillText(this.chars[i], baseX, y);
+      }
+    }
+
+    isDead() {
+      return this.row * cellSize > canvas.height + this.length * cellSize;
+    }
+  }
+
+  let lastTime = performance.now();
+
+  function draw(now) {
+    const delta = now - lastTime;
+    lastTime = now;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // set font ONCE per frame (big win)
+    ctx.font = `${cellSize - 2}px monospace`;
+
+    // controlled spawning + cap
+    if (streams.length < MAX_STREAMS && Math.random() < 0.03) {
+      streams.push(new Stream((Math.random() * columns) | 0));
+    }
+
+    // fast removal (swap-pop)
+    for (let i = streams.length - 1; i >= 0; i--) {
+      const s = streams[i];
+      s.update(delta);
+      s.draw();
+
+      if (s.isDead()) {
+        streams[i] = streams[streams.length - 1];
+        streams.pop();
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  draw(performance.now());
+});
+</script>
+
+</body>
+</html>

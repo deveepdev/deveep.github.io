@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Professional Cleaning Estimator</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+    <div class="topbar">
+        <h1>Job estimate</h1>
+        <p>Professional pricing tool</p>
+    </div>
+
+    <div class="total-card">
+
+        <div class="total-top">
+            <span>Total Estimate</span>
+            <span id="service-count">0 Services</span>
+        </div>
+
+        <div class="total-price" id="total-price">$0</div>
+        <div class="breakdown" id="breakdown"></div>
+        <div class="tax-summary" id="tax-summary"></div>
+
+    </div>
+
+    <!-- WINDOW CLEANING -->
+
+    <div class="service">
+
+        <div class="service-header">
+
+            <div class="service-title">
+                <h2>Window Cleaning</h2>
+                <div class="service-badge">SPECIALITY</div>
+            </div>
+
+            <label class="switch">
+                <input type="checkbox" id="windows-toggle">
+                <span class="slider"></span>
+            </label>
+
+        </div>
+
+        <div class="grid">
+
+            <div class="field">
+                <label>Number of Windows</label>
+
+                <input
+                    type="number"
+                    id="window-count"
+                    value="20"
+                    min="0"
+                >
+            </div>
+
+            <div class="field">
+
+                <label>House Type</label>
+
+                <div class="option-group">
+
+                    <div class="option house-option active" data-value="bungalow">
+                        Bungalow
+                    </div>
+
+                    <div class="option house-option" data-value="multi">
+                        Multiple Stories
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="field">
+
+            <label>Cleaning Options</label>
+
+            <div class="option-group">
+
+                <div class="option active" id="outside-toggle">
+                    Outside
+                </div>
+
+                <div class="option" id="inside-toggle">
+                    Inside
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- GUTTER CLEANING -->
+
+    <div class="service">
+
+        <div class="service-header">
+
+            <div class="service-title">
+                <h2>Gutter Cleaning</h2>
+            </div>
+
+            <label class="switch">
+                <input type="checkbox" id="gutters-toggle">
+                <span class="slider"></span>
+            </label>
+
+        </div>
+
+        <div class="field">
+
+            <label>House Type</label>
+
+            <div class="option-group">
+
+                <div class="option gutter-house active" data-value="bungalow">
+                    Bungalow
+                </div>
+
+                <div class="option gutter-house" data-value="multi">
+                    Multiple Stories
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="field">
+
+            <label>Roof / Gutter Complexity</label>
+
+            <input
+                type="range"
+                min="0"
+                max="10"
+                value="3"
+                id="gutter-complexity"
+            >
+
+            <div class="range-value">
+                Level:
+                <span id="complexity-label">3</span>
+            </div>
+
+            <div class="complexity-description" id="complexity-description">
+                Easy to stand on roof and simple design
+            </div>
+
+        </div>
+
+        <div class="field">
+
+            <label>House Size</label>
+
+            <div class="option-group">
+
+                <div class="option size-option active" data-value="1">
+                    Small
+                </div>
+
+                <div class="option size-option" data-value="2">
+                    Medium
+                </div>
+
+                <div class="option size-option" data-value="3">
+                    Large
+                </div>
+
+                <div class="option size-option" data-value="4">
+                    Huge
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <button class="generate-btn" id="confirm-quote">
+        Confirm Quote
+    </button>
+
+</div>
+
+
+<!-- QUOTE MODAL -->
+
+<div class="modal hidden" id="quote-modal">
+
+    <div class="modal-card">
+
+        <div class="modal-top">
+
+            <h2>Confirm Quote</h2>
+
+            <button id="close-modal">
+                ×
+            </button>
+
+        </div>
+
+        <div class="grid">
+
+            <div class="field">
+                <label>Customer Name</label>
+
+                <input
+                    type="text"
+                    id="customer-name"
+                    placeholder="John Smith"
+                >
+            </div>
+
+            <div class="field">
+                <label>Phone Number</label>
+
+                <input
+                    type="text"
+                    id="customer-number"
+                    placeholder="514-555-5555"
+                >
+            </div>
+
+        </div>
+
+        <div class="field">
+
+            <label>Address</label>
+
+            <input
+                type="text"
+                id="customer-address"
+                placeholder="123 Main Street"
+            >
+
+        </div>
+
+        <div class="field">
+
+            <label>Status</label>
+
+            <div class="option-group">
+
+                <div class="option status-option active" data-value="schedule">
+                    Schedule
+                </div>
+
+                <div class="option status-option" data-value="callback">
+                    Call Back
+                </div>
+
+                <div class="option status-option" data-value="other">
+                    Other
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="field" id="date-field">
+
+            <label>Scheduled Date</label>
+
+            <input
+                type="date"
+                id="schedule-date"
+            >
+
+        </div>
+
+        <div class="field">
+
+    <label>Payment Type</label>
+
+    <div class="option-group">
+
+        <div
+            class="option payment-option active"
+            data-value="card"
+        >
+            Card / E-Transfer
+            <small>
+                Taxes applied
+            </small>
+        </div>
+
+        <div
+            class="option payment-option"
+            data-value="cash"
+        >
+            Cash
+            <small>
+                Taxes waived
+            </small>
+        </div>
+
+    </div>
+
+</div>
+
+        <div class="field">
+
+            <label>Notes</label>
+
+            <textarea
+                id="customer-notes"
+                rows="5"
+                placeholder="Extra details..."
+            ></textarea>
+
+        </div>
+
+        <button class="generate-btn" id="generate-job">
+            Generate Job Text
+        </button>
+
+        <div class="field output-field">
+
+            <label>Generated Job</label>
+
+            <textarea
+                id="job-output"
+                rows="14"
+                readonly
+            ></textarea>
+
+        </div>
+
+        <button
+            class="generate-btn copy-btn"
+            id="copy-job"
+        >
+            Copy Job Text
+        </button>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
